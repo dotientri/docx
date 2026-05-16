@@ -584,11 +584,11 @@ jobs:
 ### 7.1 Không Bao Giờ Commit Secrets
 
 ```bash
-# ===== PHÁT HIỆN SECRETS ĐÃ COMMIT =====
+# ===== PHÁ T HIỆN SECRETS ĐÃ COMMIT =====
 
-# Dùng git-secrets (AWS)
-git secrets --scan
-git secrets --scan-history
+# Dùng gitleaks (phổ biến nhất, không phụ thuộc AWS)
+gitleaks detect --source . --verbose
+gitleaks detect --source . --report-path gitleaks-report.json
 
 # Dùng truffleHog
 trufflehog git https://github.com/company/project.git

@@ -479,9 +479,9 @@ spec:
     - port: 80
       targetPort: 8080
   # Cloud provider tạo LB tự động
+  # Azure → Azure Load Balancer (AKS)
   # AWS → ELB
   # GCP → Cloud LB
-  # Azure → Azure LB
 ```
 
 ```bash

@@ -434,17 +434,17 @@ spec:
   instances: 3
   storage:
     size: 100Gi
-    storageClass: fast-ssd
+    storageClass: managed-premium
   backup:
     barmanObjectStore:
-      destinationPath: s3://backups/postgresql
-      s3Credentials:
-        accessKeyId:
-          name: s3-creds
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: s3-creds
-          key: ACCESS_SECRET_KEY
+      destinationPath: "https://myappbackupstore.blob.core.windows.net/postgresql-backups"
+      azureCredentials:
+        storageAccount:
+          name: azure-storage-creds
+          key: STORAGE_ACCOUNT_NAME
+        storageKey:
+          name: azure-storage-creds
+          key: STORAGE_ACCOUNT_KEY
   monitoring:
     enablePodMonitor: true
 EOF

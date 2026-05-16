@@ -285,43 +285,40 @@ all:
 ```python
 # Inventory script lấy từ nguồn động (AWS, GCP, CMDB...)
 
-# ===== AWS EC2 Dynamic Inventory =====
-pip install boto3
-ansible-galaxy collection install amazon.aws
+# ===== AZURE Dynamic Inventory =====
+pip install msrestazure azure-mgmt-compute
+ansible-galaxy collection install azure.azcollection
 
-# aws_ec2.yml
-cat > inventory/aws_ec2.yml << 'EOF'
-plugin: amazon.aws.aws_ec2
-regions:
-  - us-east-1
-  - ap-southeast-1
+# azure_rm.yml
+cat > inventory/azure_rm.yml << 'EOF'
+plugin: azure.azcollection.azure_rm
+auth_source: auto  # Dùng Azure CLI / Service Principal / Managed Identity
 
-# Lọc instances theo tags
-filters:
-  tag:Environment:
-    - production
-  instance-state-name: running
+# Lọc VMs theo tags
+include_vm_resource_groups:
+  - rg-myapp-prod
+  - rg-myapp-staging
 
-# Keyed groups - tạo groups từ tags
-keyed_groups:
-  - prefix: env
-    key: tags.Environment
-  - prefix: role
-    key: tags.Role
-
-# Hostnames
-hostnames:
-  - private-ip-address    # Dùng private IP
+conditional_groups:
+  webservers: "tags.Role == 'web'"
+  databases: "tags.Role == 'db'"
+  production: "tags.Environment == 'production'"
 
 # Variables
-compose:
-  ansible_host: private_ip_address
-  ec2_tag_Name: tags.Name
+keyed_groups:
+  - prefix: env
+    key: tags.Environment | default('ungrouped')
+  - prefix: role
+    key: tags.Role | default('ungrouped')
+
+# Hostnames - dùng private IP
+hostnames:
+  - private_ipv4
 EOF
 
 # Test
-ansible-inventory -i inventory/aws_ec2.yml --list
-ansible -i inventory/aws_ec2.yml env_production -m ping
+ansible-inventory -i inventory/azure_rm.yml --list
+ansible -i inventory/azure_rm.yml env_production -m ping
 
 # ===== Custom Dynamic Inventory Script =====
 #!/usr/bin/env python3

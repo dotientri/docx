@@ -13,7 +13,7 @@ Firewall là hệ thống lọc traffic dựa trên **rules** — quyết địn
 | Loại | Layer | Ví Dụ | Đặc Điểm |
 |------|-------|-------|-----------|
 | Packet Filter | L3/L4 | iptables | Nhanh, đơn giản, dựa trên IP/Port |
-| Stateful | L3/L4 | nftables, AWS Security Groups | Track connections, smarter |
+| Stateful | L3/L4 | nftables, Azure NSG | Track connections, smarter |
 | Application | L7 | WAF, Nginx ModSecurity | Hiểu HTTP, API, SQL injection |
 | Next-Gen (NGFW) | L7 | Palo Alto, Fortinet | Deep packet inspection |
 

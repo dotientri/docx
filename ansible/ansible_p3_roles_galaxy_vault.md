@@ -305,8 +305,8 @@ collections:
     version: ">=7.0.0"
   - name: community.postgresql
     version: 3.0.0
-  - name: amazon.aws
-    version: 7.0.0
+  - name: azure.azcollection
+    version: ">=1.19.0"
 EOF
 
 ansible-galaxy install -r requirements.yml

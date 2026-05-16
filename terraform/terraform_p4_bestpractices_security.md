@@ -20,11 +20,11 @@
 
 # Đừng đặt tất cả vào 1 file main.tf khổng lồ
 # Tách theo logical groups:
-├── vpc.tf
-├── ec2.tf
-├── rds.tf
-├── iam.tf
-└── monitoring.tf
+├── networking.tf     ← VNet, Subnets, NSG
+├── compute.tf        ← VMs, Scale Sets
+├── database.tf       ← PostgreSQL, Redis
+├── rbac.tf           ← Azure AD, Role Assignments
+└── monitoring.tf     ← Log Analytics, Azure Monitor
 ```
 
 ### 1.2 Naming Conventions
@@ -33,26 +33,29 @@
 # ===== RESOURCE NAMING =====
 # Format: {project}-{environment}-{resource}-{qualifier}
 
-resource "aws_s3_bucket" "app_assets" {      # snake_case
-  bucket = "myapp-prod-assets-${random_id.suffix.hex}"
+resource "azurerm_storage_account" "app_assets" {    # snake_case
+  name                = "myappprodassetsdata"         # lowercase, no hyphens (Azure limitation)
+  resource_group_name = azurerm_resource_group.main.name
 }
 
 # Không dùng:
-resource "aws_s3_Bucket" "AppAssets" { }     # PascalCase
-resource "aws_s3_bucket" "s3-bucket-1" { }  # Hyphens (không thống nhất)
+resource "azurerm_Storage_Account" "AppAssets" { }   # PascalCase
+resource "azurerm_storage_account" "storage-1" { }   # Hyphens
 
 # ===== VARIABLE NAMING =====
-variable "environment" { }         # singular
-variable "subnet_ids" { }          # plural cho lists
-variable "enable_monitoring" { }   # boolean với enable_/is_/has_
+variable "environment" { }           # singular
+variable "subnet_ids" { }            # plural cho lists
+variable "enable_monitoring" { }     # boolean với enable_/is_/has_
+variable "location" { }              # Azure region
 
 # ===== OUTPUT NAMING =====
-output "vpc_id" { }
+output "resource_group_name" { }
 output "public_subnet_ids" { }
+output "aks_cluster_name" { }
 
 # ===== MODULE SOURCE =====
-module "vpc" {                     # lowercase, snake_case
-  source = "./modules/vpc"
+module "networking" {                # lowercase, snake_case
+  source = "./modules/networking"
 }
 ```
 
@@ -62,13 +65,17 @@ module "vpc" {                     # lowercase, snake_case
 # versions.tf
 terraform {
   required_version = ">= 1.7.0, < 2.0.0"   # Tránh breaking changes
-  
+
   required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.30"    # ~> = pessimistic constraint
-      # ~> 5.30 = >= 5.30, < 6.0
-      # ~> 5.30.1 = >= 5.30.1, < 5.31.0
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.90"    # ~> = pessimistic constraint
+      # ~> 3.90 = >= 3.90, < 4.0
+      # ~> 3.90.1 = >= 3.90.1, < 3.91.0
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.47"
     }
   }
 }
@@ -84,25 +91,38 @@ locals {
     Environment = var.environment
     ManagedBy   = "Terraform"
     GitRepo     = "https://github.com/company/infra"
-    GitCommit   = var.git_commit_hash   # Biết infra được tạo từ commit nào
+    GitCommit   = var.git_commit_hash
     Owner       = var.team_name
     CostCenter  = var.cost_center
-    CreatedAt   = timestamp()
+    Location    = var.location
   }
 }
 
-# Dùng trong provider default tags (tự động apply cho tất cả resources)
-provider "aws" {
-  default_tags {
-    tags = local.common_tags
-  }
+# Azure provider default_tags không có như AWS
+# Dùng resource group tags + individual resource tags
+
+resource "azurerm_resource_group" "main" {
+  name     = "rg-${var.project_name}-${var.environment}"
+  location = var.location
+  tags     = local.common_tags
 }
 
-# Resource có thể thêm tags riêng
-resource "aws_vpc" "main" {
-  tags = {
-    Name = "main-vpc"    # Provider sẽ merge với common_tags
-  }
+resource "azurerm_virtual_network" "main" {
+  # ... config ...
+  tags = merge(local.common_tags, {
+    Component = "networking"
+  })
+}
+
+# Azure Policy để enforce tagging (bắt buộc các team phải có tags)
+resource "azurerm_resource_group_policy_assignment" "require_tags" {
+  name                 = "require-tags"
+  resource_group_id    = azurerm_resource_group.main.id
+  policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/96670d01-0a4d-4649-9c89-2d3abc0a5025"
+
+  parameters = jsonencode({
+    tagName = { value = "Environment" }
+  })
 }
 ```
 
@@ -115,8 +135,8 @@ resource "aws_vpc" "main" {
 ```hcl
 # ===== ĐỪNG BAO GIỜ HARDCODE SECRETS =====
 # Sai:
-resource "aws_db_instance" "main" {
-  password = "SuperSecret123!"    # ← Commit lên git!
+resource "azurerm_postgresql_flexible_server" "main" {
+  administrator_password = "SuperSecret123!"    # ← Commit lên git!
 }
 
 # Đúng - Dùng biến sensitive:
@@ -125,8 +145,8 @@ variable "db_password" {
   sensitive = true   # Không hiện trong logs/plan output
 }
 
-resource "aws_db_instance" "main" {
-  password = var.db_password
+resource "azurerm_postgresql_flexible_server" "main" {
+  administrator_password = var.db_password
 }
 
 # ===== SECRETS SOURCES =====
@@ -134,40 +154,42 @@ resource "aws_db_instance" "main" {
 # 1. Environment variables
 # TF_VAR_db_password="SecretPass" terraform apply
 
-# 2. AWS Secrets Manager
-data "aws_secretsmanager_secret_version" "db_creds" {
-  secret_id = "myapp/prod/db-credentials"
+# 2. Azure Key Vault (BEST PRACTICE)
+data "azurerm_key_vault" "secrets" {
+  name                = "kv-myapp-prod"
+  resource_group_name = azurerm_resource_group.main.name
 }
 
-locals {
-  db_creds = jsondecode(data.aws_secretsmanager_secret_version.db_creds.secret_string)
+data "azurerm_key_vault_secret" "db_password" {
+  name         = "postgres-admin-password"
+  key_vault_id = data.azurerm_key_vault.secrets.id
 }
 
-resource "aws_db_instance" "main" {
-  username = local.db_creds.username
-  password = local.db_creds.password
+resource "azurerm_postgresql_flexible_server" "main" {
+  administrator_password = data.azurerm_key_vault_secret.db_password.value
 }
 
-# 3. HashiCorp Vault
-data "vault_generic_secret" "db" {
-  path = "secret/myapp/prod/db"
-}
-
-# 4. Terraform Cloud - Sensitive variables
+# 3. Azure DevOps Variable Groups (CI/CD secrets)
+# → Cấu hình trong Azure DevOps, inject vào pipeline
 
 # ===== ENCRYPT STATE =====
-terraform {
-  backend "s3" {
-    bucket  = "terraform-state"
-    key     = "prod/terraform.tfstate"
-    region  = "us-east-1"
-    encrypt = true    # AES-256 encryption
-    kms_key_id = "arn:aws:kms:us-east-1:123:key/abc123"
+# Azure Storage mã hóa tự động với Microsoft-managed keys
+# Dùng Customer-managed keys (CMK) cho compliance yêu cầu:
+resource "azurerm_storage_account" "tfstate" {
+  name                     = "mycompanytfstate"
+  resource_group_name      = azurerm_resource_group.tfstate.name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  # CMK encryption
+  customer_managed_key {
+    key_vault_key_id          = azurerm_key_vault_key.tfstate.id
+    user_assigned_identity_id = azurerm_user_assigned_identity.tfstate.id
   }
 }
 
 # ===== STATE KHÔNG NÊN CHỨA SECRETS =====
-# Nếu cần output password, mark sensitive:
 output "db_password" {
   value     = var.db_password
   sensitive = true    # Không hiện khi terraform output
@@ -175,71 +197,79 @@ output "db_password" {
 # → Vẫn lưu trong state file! Encrypt state là bắt buộc
 ```
 
-### 2.2 IAM Best Practices
+### 2.2 Azure RBAC Best Practices
 
 ```hcl
 # ===== PRINCIPLE OF LEAST PRIVILEGE =====
 
-# IAM Role cho Terraform (trong CI/CD)
-data "aws_iam_policy_document" "terraform_assume_role" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]  # OIDC from GitHub Actions
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:company/infra:ref:refs/heads/main"]
-    }
-  }
-}
+# Service Principal cho Terraform CI/CD
+# Chỉ cấp quyền cần thiết, không phải Contributor toàn bộ subscription
 
-resource "aws_iam_role" "terraform_ci" {
-  name               = "terraform-ci"
-  assume_role_policy = data.aws_iam_policy_document.terraform_assume_role.json
-}
+data "azurerm_subscription" "current" {}
+data "azurerm_client_config" "current" {}
 
-# Chỉ cấp quyền cần thiết
-data "aws_iam_policy_document" "terraform_ci_policy" {
-  # VPC permissions
-  statement {
-    actions   = ["ec2:Describe*", "ec2:Create*", "ec2:Delete*", "ec2:Modify*"]
-    resources = ["*"]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:RequestedRegion"
-      values   = ["ap-southeast-1"]  # Chỉ region này
-    }
-  }
-  
-  # RDS permissions - chỉ specific resources
-  statement {
+# Custom role cho Terraform (chỉ cấp quyền cần thiết)
+resource "azurerm_role_definition" "terraform_deployer" {
+  name        = "Terraform Deployer - MyApp"
+  scope       = data.azurerm_subscription.current.id
+  description = "Custom role for Terraform CI/CD pipelines"
+
+  permissions {
     actions = [
-      "rds:CreateDBInstance",
-      "rds:ModifyDBInstance",
-      "rds:DeleteDBInstance",
-      "rds:Describe*"
+      # Resource Group
+      "Microsoft.Resources/resourceGroups/*",
+      "Microsoft.Resources/deployments/*",
+
+      # Networking
+      "Microsoft.Network/*",
+
+      # Compute
+      "Microsoft.Compute/*",
+
+      # AKS
+      "Microsoft.ContainerService/*",
+
+      # ACR
+      "Microsoft.ContainerRegistry/*",
+
+      # Storage (cho state)
+      "Microsoft.Storage/*",
+
+      # Key Vault
+      "Microsoft.KeyVault/*",
+
+      # Monitor
+      "Microsoft.OperationalInsights/*",
+      "Microsoft.Insights/*",
+
+      # Authorization (cho role assignments)
+      "Microsoft.Authorization/roleAssignments/*",
     ]
-    resources = [
-      "arn:aws:rds:ap-southeast-1:*:db:myapp-*"  # Chỉ myapp-* instances
+    not_actions = [
+      # Không cho xóa subscription
+      "Microsoft.Resources/subscriptions/delete",
     ]
   }
-  
-  # S3 - chỉ specific buckets
-  statement {
-    actions   = ["s3:*"]
-    resources = [
-      "arn:aws:s3:::myapp-*",
-      "arn:aws:s3:::myapp-*/*"
-    ]
-  }
+
+  assignable_scopes = [
+    data.azurerm_subscription.current.id
+  ]
+}
+
+resource "azurerm_role_assignment" "terraform_ci" {
+  scope              = data.azurerm_subscription.current.id
+  role_definition_id = azurerm_role_definition.terraform_deployer.role_definition_resource_id
+  principal_id       = var.terraform_sp_object_id
+}
+
+# Workload Identity cho Azure DevOps (không cần secrets!)
+resource "azurerm_federated_identity_credential" "azure_devops" {
+  name                = "azure-devops-federation"
+  resource_group_name = azurerm_resource_group.main.name
+  parent_id           = azurerm_user_assigned_identity.terraform.id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = "https://vstoken.dev.azure.com/<ORG_ID>"
+  subject             = "sc://<ORG_NAME>/<PROJECT_NAME>/<SERVICE_CONNECTION_NAME>"
 }
 ```
 
@@ -254,12 +284,12 @@ checkov -f main.tf              # Scan file cụ thể
 checkov -d . --framework terraform
 
 # Output:
-# Check: CKV_AWS_8: "Ensure EBS volume is encrypted"
-# PASSED for resource: aws_ebs_volume.data
-# FAILED for resource: aws_ebs_volume.temp
+# Check: CKV_AZURE_35: "Ensure Azure Storage Account has Secure transfer required"
+# PASSED for resource: azurerm_storage_account.tfstate
+# FAILED for resource: azurerm_storage_account.temp
 
 checkov -d . --quiet            # Chỉ show failures
-checkov -d . --skip-check CKV_AWS_8  # Skip specific check
+checkov -d . --skip-check CKV_AZURE_35  # Skip specific check
 
 # ===== TFSEC - Security scanner =====
 brew install tfsec
@@ -268,13 +298,13 @@ tfsec . --minimum-severity MEDIUM
 
 # ===== TERRASCAN =====
 brew install terrascan
-terrascan scan -t aws -i terraform
+terrascan scan -t azure -i terraform
 
 # ===== INFRACOST - Cost estimation =====
 brew install infracost
 infracost configure set api_key YOUR_KEY
 infracost breakdown --path . --terraform-var-file=terraform.tfvars
-# → Estimate monthly cost của changes
+# → Estimate monthly cost của Azure resources
 ```
 
 ---
@@ -290,311 +320,214 @@ variable "enable_bastion" {
 }
 
 variable "environment" {
-  type    = string
+  type = string
 }
 
-# Tạo conditional resource
-resource "aws_instance" "bastion" {
-  count = var.enable_bastion ? 1 : 0    # 0 hoặc 1
-  
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.nano"
-  subnet_id     = aws_subnet.public[0].id
+# Azure Bastion (conditional)
+resource "azurerm_bastion_host" "main" {
+  count = var.enable_bastion ? 1 : 0
+
+  name                = "bastion-${var.environment}"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  ip_configuration {
+    name                 = "config"
+    subnet_id            = azurerm_subnet.bastion[0].id
+    public_ip_address_id = azurerm_public_ip.bastion[0].id
+  }
 }
 
-# Reference conditional resource
-output "bastion_ip" {
-  value = var.enable_bastion ? aws_instance.bastion[0].public_ip : null
+output "bastion_dns" {
+  value = var.enable_bastion ? azurerm_bastion_host.main[0].dns_name : null
 }
 
 # Environment-based resources
-resource "aws_cloudwatch_log_group" "app" {
-  name              = "/myapp/${var.environment}"
-  retention_in_days = var.environment == "production" ? 90 : 7
+resource "azurerm_monitor_diagnostic_setting" "app" {
+  name               = "diag-${var.environment}"
+  target_resource_id = azurerm_kubernetes_cluster.main.id
+
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+    retention_policy {
+      enabled = true
+      days    = var.environment == "production" ? 90 : 7
+    }
+  }
 }
 ```
 
 ### 3.2 Data Source Patterns
 
 ```hcl
-# ===== LẤY THÔNG TIN TỪ EXISTING INFRASTRUCTURE =====
+# ===== LẤY THÔNG TIN TỪ EXISTING AZURE INFRASTRUCTURE =====
 
-# Cross-account data
-data "aws_vpc" "shared" {
-  provider = aws.shared_services   # Different provider/account
-  id       = "vpc-shared12345"
+# Lấy thông tin subscription hiện tại
+data "azurerm_client_config" "current" {}
+data "azurerm_subscription" "current" {}
+
+# Lấy Azure AD Group
+data "azuread_group" "devops" {
+  display_name     = "DevOps-Engineers"
+  security_enabled = true
 }
 
-# Find latest AMI
-data "aws_ami" "app" {
-  most_recent = true
-  owners      = [var.aws_account_id]  # Our own AMIs
-  
-  filter {
-    name   = "name"
-    values = ["myapp-*"]
-  }
-  
-  filter {
-    name   = "tag:Environment"
-    values = [var.environment]
-  }
+# Tìm existing Key Vault
+data "azurerm_key_vault" "shared" {
+  name                = "kv-company-shared"
+  resource_group_name = "rg-shared-services"
 }
 
-# Get secret from AWS Secrets Manager
-data "aws_secretsmanager_secret" "db" {
-  name = "/myapp/${var.environment}/database"
+# Lấy secret từ Key Vault
+data "azurerm_key_vault_secret" "db_password" {
+  name         = "postgres-admin-password"
+  key_vault_id = data.azurerm_key_vault.shared.id
 }
 
-data "aws_secretsmanager_secret_version" "db" {
-  secret_id = data.aws_secretsmanager_secret.db.id
-}
-
-locals {
-  db_secret = jsondecode(data.aws_secretsmanager_secret_version.db.secret_string)
+# Tìm existing VNet (cross-team)
+data "azurerm_virtual_network" "shared" {
+  name                = "vnet-company-hub"
+  resource_group_name = "rg-networking-hub"
 }
 
 # Remote state data source (cross-team)
 data "terraform_remote_state" "networking" {
-  backend = "s3"
+  backend = "azurerm"
   config = {
-    bucket = "company-terraform-state"
-    key    = "networking/terraform.tfstate"
-    region = "ap-southeast-1"
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "mycompanytfstate"
+    container_name       = "tfstate"
+    key                  = "networking/terraform.tfstate"
+    use_azuread_auth     = true
   }
 }
 
-resource "aws_instance" "app" {
-  subnet_id = data.terraform_remote_state.networking.outputs.private_subnet_ids[0]
+resource "azurerm_kubernetes_cluster" "main" {
+  # Dùng VNet từ networking team
+  default_node_pool {
+    vnet_subnet_id = data.terraform_remote_state.networking.outputs.private_subnet_ids[0]
+  }
 }
 ```
 
-### 3.3 Multi-Region và Multi-Account
+### 3.3 Multi-Region và Multi-Subscription Azure
 
 ```hcl
-# providers.tf
-provider "aws" {
-  alias  = "primary"
-  region = "ap-southeast-1"
+# providers.tf - Azure Multi-region, Multi-subscription
+provider "azurerm" {
+  alias           = "primary"
+  subscription_id = var.primary_subscription_id
+  features {}
 }
 
-provider "aws" {
-  alias  = "dr"      # Disaster Recovery
-  region = "ap-northeast-1"
+provider "azurerm" {
+  alias           = "dr"        # Disaster Recovery region
+  subscription_id = var.primary_subscription_id
+  features {}
 }
 
-provider "aws" {
-  alias  = "shared"
-  region = "ap-southeast-1"
-  assume_role {
-    role_arn = "arn:aws:iam::SHARED_ACCOUNT:role/TerraformCrossAccount"
-  }
+provider "azurerm" {
+  alias           = "shared"    # Shared services subscription
+  subscription_id = var.shared_subscription_id
+  features {}
 }
 
-# S3 bucket với replication cross-region
-resource "aws_s3_bucket" "primary" {
-  provider = aws.primary
-  bucket   = "myapp-data-primary"
+# Storage Account với geo-replication (primary region)
+resource "azurerm_storage_account" "primary" {
+  provider             = azurerm.primary
+  name                 = "myappdataprimary"
+  resource_group_name  = azurerm_resource_group.primary.name
+  location             = "Southeast Asia"
+  account_tier         = "Standard"
+  account_replication_type = "GRS"  # Geo-Redundant Storage
 }
 
-resource "aws_s3_bucket" "replica" {
-  provider = aws.dr
-  bucket   = "myapp-data-replica"
-}
+# ACR với geo-replication
+resource "azurerm_container_registry" "main" {
+  provider            = azurerm.primary
+  name                = "myappregistry"
+  resource_group_name = azurerm_resource_group.primary.name
+  location            = "Southeast Asia"
+  sku                 = "Premium"
 
-resource "aws_s3_bucket_replication_configuration" "replication" {
-  provider = aws.primary
-  bucket   = aws_s3_bucket.primary.id
-  role     = aws_iam_role.replication.arn
-  
-  rule {
-    id     = "replicate-to-dr"
-    status = "Enabled"
-    
-    destination {
-      bucket        = aws_s3_bucket.replica.arn
-      storage_class = "STANDARD_IA"
-    }
+  georeplications {
+    location                  = "East Asia"     # DR region
+    zone_redundancy_enabled   = true
+    regional_endpoint_enabled = true
   }
 }
 
 # Module với provider alias
-module "vpc_dr" {
-  source = "./modules/vpc"
-  
+module "aks_dr" {
+  source = "./modules/aks"
+
   providers = {
-    aws = aws.dr    # Pass DR provider vào module
+    azurerm = azurerm.dr   # Pass DR provider vào module
   }
-  
+
   environment  = "dr"
-  vpc_cidr     = "10.1.0.0/16"
+  location     = "East Asia"
   project_name = var.project_name
 }
 ```
 
 ---
 
-## 4. Terragrunt - DRY Terraform
-
-```hcl
-# Terragrunt = Wrapper cho Terraform, giải quyết code duplication
-
-# Cấu trúc với Terragrunt:
-# live/
-# ├── terragrunt.hcl              ← Root config
-# ├── staging/
-# │   ├── terragrunt.hcl
-# │   ├── vpc/
-# │   │   └── terragrunt.hcl
-# │   ├── ec2/
-# │   │   └── terragrunt.hcl
-# │   └── rds/
-# │       └── terragrunt.hcl
-# └── production/
-#     ├── terragrunt.hcl
-#     ├── vpc/
-#     │   └── terragrunt.hcl
-#     └── ...
-
-# Root terragrunt.hcl
-# live/terragrunt.hcl
-remote_state {
-  backend = "s3"
-  generate = {
-    path      = "backend.tf"
-    if_exists = "overwrite_terragrunt"
-  }
-  config = {
-    bucket         = "company-terraform-state"
-    key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = "ap-southeast-1"
-    encrypt        = true
-    dynamodb_table = "terraform-state-lock"
-  }
-}
-
-generate "versions" {
-  path      = "versions.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<EOF
-terraform {
-  required_version = ">= 1.7.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.30"
-    }
-  }
-}
-EOF
-}
-
-# Environment config
-# live/staging/terragrunt.hcl
-locals {
-  environment = "staging"
-}
-
-inputs = {
-  environment  = local.environment
-  project_name = "myapp"
-}
-
-# VPC module config
-# live/staging/vpc/terragrunt.hcl
-include "root" {
-  path = find_in_parent_folders()
-}
-
-terraform {
-  source = "../../../modules//vpc"
-}
-
-inputs = {
-  vpc_cidr            = "10.0.0.0/16"
-  public_subnet_count = 2
-  enable_nat_gateway  = false    # Staging: Save cost
-}
-
-# EC2 depends on VPC
-# live/staging/ec2/terragrunt.hcl
-include "root" {
-  path = find_in_parent_folders()
-}
-
-terraform {
-  source = "../../../modules//ec2"
-}
-
-dependency "vpc" {
-  config_path = "../vpc"   # ← Auto get outputs từ VPC module!
-}
-
-inputs = {
-  vpc_id             = dependency.vpc.outputs.vpc_id
-  private_subnet_ids = dependency.vpc.outputs.private_subnet_ids
-}
-```
+## 4. Cheat Sheet
 
 ```bash
-# Terragrunt commands
-terragrunt plan
-terragrunt apply
+# INIT & SETUP
+terraform init                    # Initialize
+terraform init -upgrade           # Upgrade providers
+terraform init -backend-config=backend.hcl  # External backend config
 
-# Run all modules trong folder
-terragrunt run-all plan
-terragrunt run-all apply
+# PLAN & APPLY
+terraform plan                    # Preview
+terraform plan -out=tfplan        # Save plan
+terraform plan -destroy           # Plan to destroy
+terraform apply                   # Apply (with confirm)
+terraform apply -auto-approve     # No confirm
+terraform apply tfplan            # Apply saved plan
+terraform apply -target=resource  # Target specific resource
+terraform apply -replace=resource # Force recreate
 
-# Chỉ affected modules
-terragrunt run-all plan --terragrunt-modules-that-include ./staging/vpc
+# DESTROY
+terraform destroy                 # Destroy all
+terraform destroy -target=module.postgresql  # Destroy specific
+
+# STATE MANAGEMENT
+terraform state list
+terraform state show address
+terraform state mv old new
+terraform state rm address
+terraform state pull > backup.tfstate
+terraform import address id
+
+# DEBUGGING
+TF_LOG=DEBUG terraform plan
+terraform console                 # REPL
+terraform graph | dot -Tsvg > graph.svg
+
+# FORMATTING & VALIDATION
+terraform fmt -recursive
+terraform validate
+terraform fmt -check              # CI check (exit 1 if unformatted)
+
+# WORKSPACES
+terraform workspace list
+terraform workspace new staging
+terraform workspace select prod
+terraform workspace show
+
+# OUTPUTS
+terraform output
+terraform output -json
+terraform output resource_group_name
 ```
 
 ---
 
-## 5. Cheat Sheet
-
-```bash
-# ===== WORKFLOW =====
-terraform init              # Initialize
-terraform fmt               # Format code
-terraform validate          # Validate syntax
-terraform plan              # Preview changes
-terraform apply             # Apply changes
-terraform destroy           # Destroy all
-
-# ===== STATE =====
-terraform state list                    # List resources
-terraform state show aws_vpc.main      # Show resource details
-terraform state mv old new             # Rename resource
-terraform state rm resource.name       # Remove from state
-terraform import aws_vpc.main vpc-xxx  # Import existing
-
-# ===== DEBUGGING =====
-TF_LOG=DEBUG terraform plan            # Debug logging
-TF_LOG_PATH=debug.log terraform plan   # Log to file
-
-# ===== USEFUL COMMANDS =====
-terraform output                       # Show outputs
-terraform output -json | jq .         # JSON format
-terraform console                      # Interactive REPL
-terraform graph | dot -Tsvg > graph.svg  # Dependency graph
-
-# ===== TIPS =====
-# Target specific resource
-terraform plan -target=module.vpc
-terraform apply -target=aws_instance.web[0]
-
-# Replace (force recreate)
-terraform apply -replace=aws_instance.web[0]
-
-# Skip confirmation
-terraform apply -auto-approve
-
-# Show plan in JSON
-terraform plan -out=tfplan
-terraform show -json tfplan | jq .
-```
-
----
-
-> **Tiếp theo: Phần 5** - Troubleshooting, Patterns & Real-World Terraform
+> **Tiếp theo: Phần 5** - Troubleshooting, Testing & Real-World Terraform với Azure

@@ -10,10 +10,10 @@
 
 **Trước IaC:**
 ```
-1. Vào AWS Console (click, click, click)
-2. Tạo VPC... cấu hình subnets... 
-3. Tạo Security Groups...
-4. Launch EC2 instances...
+1. Vào Azure Portal (click, click, click)
+2. Tạo Resource Group... cấu hình VNet...
+3. Tạo Network Security Groups...
+4. Tạo Azure VMs...
 5. Cấu hình Load Balancer...
 → 2 giờ sau: Done (và không ai biết mình đã làm gì chính xác)
 
@@ -24,15 +24,17 @@ Khi có lỗi: Không biết config khác ở đâu!
 **Với Terraform:**
 ```hcl
 # main.tf - Mô tả infrastructure bằng code
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+resource "azurerm_resource_group" "main" {
+  name     = "rg-myapp-prod"
+  location = "Southeast Asia"
 }
 
-resource "aws_instance" "web" {
-  count         = 3
-  ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = "t3.micro"
-  vpc_id        = aws_vpc.main.id
+resource "azurerm_linux_virtual_machine" "web" {
+  count               = 3
+  name                = "vm-web-${count.index + 1}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  size                = "Standard_B2s"
 }
 ```
 
@@ -44,16 +46,16 @@ terraform workspace new staging && terraform apply
 
 ### 1.2 Tại Sao Terraform?
 
-| Tính Năng | Terraform | CloudFormation | Pulumi | ARM Templates |
-|-----------|-----------|----------------|--------|---------------|
-| Language | HCL | JSON/YAML | Python/TypeScript | JSON |
-| Multi-cloud | ✅ Tất cả clouds | ❌ AWS only | ✅ | ❌ Azure only |
-| State management | Local/Remote | AWS manages | Local/Remote | Azure manages |
-| Community | Rất lớn | Lớn | Nhỏ hơn | Nhỏ |
-| Import existing | ✅ | Khó | ✅ | ❌ |
+| Tính Năng | Terraform | ARM Templates | Bicep | Pulumi |
+|-----------|-----------|---------------|-------|--------|
+| Language | HCL | JSON | Bicep DSL | Python/TypeScript |
+| Multi-cloud | ✅ Tất cả clouds | ❌ Azure only | ❌ Azure only | ✅ |
+| State management | Local/Remote | Azure manages | Azure manages | Local/Remote |
+| Community | Rất lớn | Lớn | Lớn | Nhỏ hơn |
+| Import existing | ✅ | Khó | ✅ | ✅ |
 
 **Terraform nổi bật vì:**
-- **Multi-cloud:** 1 tool cho AWS, Azure, GCP, Kubernetes, GitHub, Cloudflare...
+- **Multi-cloud:** 1 tool cho Azure, AWS, GCP, Kubernetes, GitHub, Cloudflare...
 - **Declarative:** Mô tả trạng thái cuối, không phải các bước
 - **Plan trước:** `terraform plan` xem những gì sẽ thay đổi trước khi apply
 - **State:** Track trạng thái thực tế của infrastructure
@@ -71,7 +73,7 @@ terraform workspace new staging && terraform apply
 │                                                        │
 │  ┌──────────┐  ┌──────────┐  ┌────────────────────┐  │
 │  │  Config  │  │  State   │  │     Providers      │  │
-│  │  Files   │  │  File    │  │  (AWS, Azure, GCP) │  │
+│  │  Files   │  │  File    │  │ (azurerm, google)  │  │
 │  │  (.tf)   │  │(.tfstate)│  │                    │  │
 │  └──────────┘  └──────────┘  └────────────────────┘  │
 │                                                        │
@@ -79,24 +81,24 @@ terraform workspace new staging && terraform apply
                           │
               ┌───────────┼────────────┐
               ▼           ▼            ▼
-          AWS API    Azure API     GCP API
-          (EC2, etc) (VM, etc)   (GKE, etc)
+         Azure API    GCP API      K8s API
+         (ARM REST)  (GKE, etc)  (kubectl)
 ```
 
 ### 2.2 Core Concepts
 
 **Provider:**
 - Plugin kết nối Terraform với infrastructure platform
-- `aws`, `azurerm`, `google`, `kubernetes`, `github`, `cloudflare`...
+- `azurerm`, `azuread`, `google`, `kubernetes`, `github`, `cloudflare`...
 - Provider quản lý authentication và API calls
 
 **Resource:**
-- Đơn vị infrastructure (EC2 instance, S3 bucket, DNS record...)
+- Đơn vị infrastructure (Azure VM, Azure Blob, DNS record...)
 - Được tạo/quản lý bởi provider
 
 **Data Source:**
 - Query thông tin đã tồn tại (không tạo mới)
-- Ví dụ: Tìm AMI mới nhất, lấy thông tin VPC sẵn có
+- Ví dụ: Tìm Azure image mới nhất, lấy thông tin VNet sẵn có
 
 **State:**
 - File JSON ghi lại trạng thái hiện tại của infrastructure
@@ -110,7 +112,7 @@ terraform workspace new staging && terraform apply
 
 **Apply:**
 - Thực thi plan
-- Gọi API của provider để tạo/sửa/xóa resources
+- Gọi Azure Resource Manager API để tạo/sửa/xóa resources
 
 ---
 
@@ -142,7 +144,6 @@ terraform version
 # Terraform v1.7.0
 
 # ===== TFENV (Version Manager - Khuyến nghị) =====
-# Giống pyenv nhưng cho Terraform
 git clone https://github.com/tfutils/tfenv.git ~/.tfenv
 echo 'export PATH="~/.tfenv/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
@@ -152,37 +153,42 @@ tfenv use 1.7.0
 tfenv list
 ```
 
-### 3.2 Cấu Hình AWS Provider
+### 3.2 Cấu Hình Azure Provider
 
 ```bash
-# ===== SETUP AWS CREDENTIALS =====
+# ===== SETUP AZURE CREDENTIALS =====
 
-# Cách 1: AWS CLI
-aws configure
-# AWS Access Key ID: AKIAIOSFODNN7EXAMPLE
-# AWS Secret Access Key: wJalrXUtnFEMI...
-# Default region: ap-southeast-1
-# Default output format: json
+# Cách 1: Azure CLI (local development)
+az login
+az account show
+az account set --subscription "My Subscription Name"
 
-# Cách 2: Environment variables (cho CI/CD)
-export AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
-export AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI..."
-export AWS_DEFAULT_REGION="ap-southeast-1"
+# Cách 2: Service Principal (CI/CD - BEST PRACTICE)
+# Tạo Service Principal
+az ad sp create-for-rbac \
+  --name "sp-terraform-myapp" \
+  --role Contributor \
+  --scopes /subscriptions/<SUBSCRIPTION_ID>
 
-# Cách 3: IAM Roles (trên EC2/ECS - BEST PRACTICE, không cần keys!)
+# Output:
+# {
+#   "appId":       "CLIENT_ID",
+#   "password":    "CLIENT_SECRET",
+#   "tenant":      "TENANT_ID"
+# }
+
+# Export environment variables cho Terraform
+export ARM_CLIENT_ID="<CLIENT_ID>"
+export ARM_CLIENT_SECRET="<CLIENT_SECRET>"
+export ARM_TENANT_ID="<TENANT_ID>"
+export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+
+# Cách 3: Managed Identity (trên Azure VM/AKS - không cần secrets!)
 # → Terraform tự động lấy credentials từ instance metadata
+# export ARM_USE_MSI=true
 
-# Cách 4: AWS Profiles (~/.aws/credentials)
-[default]
-aws_access_key_id = AKIA...
-aws_secret_access_key = ...
-
-[production]
-aws_access_key_id = AKIA...
-aws_secret_access_key = ...
-
-# Dùng profile:
-export AWS_PROFILE=production
+# Cách 4: Azure DevOps Service Connection
+# → Cấu hình trong Azure DevOps pipeline, tự động inject
 ```
 
 ---
@@ -196,93 +202,106 @@ export AWS_PROFILE=production
 
 # ===== PROVIDER CONFIGURATION =====
 terraform {
-  required_version = ">= 1.5.0"          # Yêu cầu Terraform version
-  
+  required_version = ">= 1.7.0"
+
   required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"                  # ~> = compatible: >= 5.0, < 6.0
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.90"   # ~> = compatible: >= 3.90, < 4.0
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.47"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.0"
+      version = "~> 3.6"
     }
   }
-  
-  # Remote state backend
-  backend "s3" {
-    bucket  = "my-terraform-state"
-    key     = "production/terraform.tfstate"
-    region  = "us-east-1"
-    encrypt = true
-    dynamodb_table = "terraform-state-lock"
+
+  # Remote state backend (Azure Storage)
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform-state"
+    storage_account_name = "myapptfstate"
+    container_name       = "tfstate"
+    key                  = "production/terraform.tfstate"
+    use_azuread_auth     = true
   }
 }
 
-provider "aws" {
-  region  = "ap-southeast-1"
-  profile = "production"
-  
-  default_tags {
-    tags = {
-      ManagedBy   = "Terraform"
-      Environment = var.environment
-      Project     = var.project_name
+provider "azurerm" {
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = true
+    }
+    key_vault {
+      purge_soft_delete_on_destroy    = false
+      recover_soft_deleted_key_vaults = true
     }
   }
+  subscription_id = var.subscription_id
+}
+
+provider "azuread" {
+  tenant_id = var.tenant_id
 }
 
 # ===== RESOURCES =====
 # Syntax: resource "<provider>_<type>" "<local_name>" { }
-resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-  
+resource "azurerm_resource_group" "main" {
+  name     = "rg-${var.project_name}-${var.environment}"
+  location = var.location
+
   tags = {
-    Name = "main-vpc"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
   }
 }
 
-resource "aws_subnet" "public" {
-  count             = 2
-  vpc_id            = aws_vpc.main.id            # Reference other resource
-  cidr_block        = "10.0.${count.index}.0/24"
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  
-  map_public_ip_on_launch = true
+resource "azurerm_virtual_network" "main" {
+  name                = "vnet-${var.project_name}-${var.environment}"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name  # Reference other resource
+
+  tags = azurerm_resource_group.main.tags
+}
+
+resource "azurerm_subnet" "public" {
+  count                = 2
+  name                 = "snet-public-${count.index + 1}"
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = ["10.0.${count.index}.0/24"]
 }
 
 # ===== DATA SOURCES =====
 # Query existing resources (read-only, không tạo mới)
-data "aws_availability_zones" "available" {
-  state = "available"
-}
+data "azurerm_client_config" "current" {}
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"]   # Canonical
-  
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-  
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+data "azurerm_subscription" "current" {}
+
+# Lấy thông tin Azure AD group sẵn có
+data "azuread_group" "devops" {
+  display_name     = "DevOps-Engineers"
+  security_enabled = true
 }
 
 # ===== OUTPUTS =====
-output "vpc_id" {
-  description = "VPC ID"
-  value       = aws_vpc.main.id
+output "resource_group_name" {
+  description = "Resource Group Name"
+  value       = azurerm_resource_group.main.name
+}
+
+output "vnet_id" {
+  description = "Virtual Network ID"
+  value       = azurerm_virtual_network.main.id
 }
 
 output "subnet_ids" {
   description = "Public subnet IDs"
-  value       = aws_subnet.public[*].id
+  value       = azurerm_subnet.public[*].id
 }
 ```
 
@@ -294,7 +313,7 @@ variable "environment" {
   description = "Deployment environment (staging/production)"
   type        = string
   default     = "staging"
-  
+
   validation {
     condition     = contains(["staging", "production"], var.environment)
     error_message = "Must be staging or production"
@@ -306,20 +325,36 @@ variable "project_name" {
   type        = string
 }
 
-variable "instance_type" {
-  description = "EC2 instance type"
+variable "location" {
+  description = "Azure region"
   type        = string
-  default     = "t3.micro"
+  default     = "Southeast Asia"
 }
 
-variable "instance_count" {
-  description = "Number of instances"
+variable "subscription_id" {
+  description = "Azure Subscription ID"
+  type        = string
+}
+
+variable "tenant_id" {
+  description = "Azure Tenant ID"
+  type        = string
+}
+
+variable "vm_size" {
+  description = "Azure VM size"
+  type        = string
+  default     = "Standard_B2s"
+}
+
+variable "vm_count" {
+  description = "Number of VMs"
   type        = number
   default     = 2
 }
 
 variable "enable_monitoring" {
-  description = "Enable detailed monitoring"
+  description = "Enable Azure Monitor"
   type        = bool
   default     = false
 }
@@ -339,24 +374,22 @@ variable "tags" {
 variable "database_config" {
   description = "Database configuration"
   type = object({
-    engine         = string
-    engine_version = string
-    instance_class = string
-    storage_gb     = number
-    multi_az       = bool
+    sku_name   = string
+    storage_mb = number
+    version    = string
+    backup_days = number
   })
   default = {
-    engine         = "postgres"
-    engine_version = "15.4"
-    instance_class = "db.t3.micro"
-    storage_gb     = 20
-    multi_az       = false
+    sku_name    = "B_Standard_B1ms"
+    storage_mb  = 32768
+    version     = "15"
+    backup_days = 7
   }
 }
 
 # Sensitive variable (không hiện trong logs)
 variable "db_password" {
-  description = "Database password"
+  description = "Database admin password"
   type        = string
   sensitive   = true
 }
@@ -367,17 +400,19 @@ variable "db_password" {
 
 # Cách 1: terraform.tfvars (auto-loaded)
 cat terraform.tfvars
-environment    = "production"
-project_name   = "myapp"
-instance_count = 5
-db_password    = "SuperSecret123!"
+environment     = "production"
+project_name    = "myapp"
+vm_count        = 5
+subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+db_password     = "SuperSecret123!"
 
 # Cách 2: *.auto.tfvars (auto-loaded)
 cat production.auto.tfvars
 environment = "production"
+location    = "Southeast Asia"
 
 # Cách 3: -var flag
-terraform apply -var="environment=staging" -var="instance_count=2"
+terraform apply -var="environment=staging" -var="vm_count=2"
 
 # Cách 4: -var-file flag
 terraform apply -var-file="staging.tfvars"
@@ -397,25 +432,29 @@ locals {
     Environment = var.environment
     Project     = var.project_name
     ManagedBy   = "Terraform"
-    CreatedAt   = timestamp()
+    Location    = var.location
   })
-  
+
   # Name prefix
   name_prefix = "${var.project_name}-${var.environment}"
-  
+
   # Tính toán phức tạp
-  instance_count = var.environment == "production" ? 3 : 1
-  
+  vm_count = var.environment == "production" ? 3 : 1
+
   # Conditional logic
   is_production = var.environment == "production"
-  
+
   # Database name từ project name
   db_name = replace(var.project_name, "-", "_")
 }
 
-resource "aws_instance" "web" {
-  count = local.instance_count
-  
+resource "azurerm_linux_virtual_machine" "web" {
+  count               = local.vm_count
+  name                = "${local.name_prefix}-vm-${count.index + 1}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  size                = var.vm_size
+
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-web-${count.index + 1}"
   })
@@ -429,22 +468,24 @@ resource "aws_instance" "web" {
 ### 5.1 count - Tạo Nhiều Resources
 
 ```hcl
-# Tạo 3 EC2 instances
-resource "aws_instance" "web" {
-  count         = 3
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
-  
+# Tạo 3 Azure VMs
+resource "azurerm_linux_virtual_machine" "web" {
+  count               = 3
+  name                = "vm-web-${count.index + 1}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+  size                = "Standard_B2s"
+
   tags = {
-    Name = "web-${count.index + 1}"  # web-1, web-2, web-3
+    Name = "web-${count.index + 1}"   # web-1, web-2, web-3
   }
 }
 
-# Reference: aws_instance.web[0], aws_instance.web[1], aws_instance.web[2]
-# All instances: aws_instance.web[*]
+# Reference: azurerm_linux_virtual_machine.web[0], [1], [2]
+# All VMs: azurerm_linux_virtual_machine.web[*]
 
-output "web_ips" {
-  value = aws_instance.web[*].private_ip
+output "vm_private_ips" {
+  value = azurerm_linux_virtual_machine.web[*].private_ip_address
 }
 ```
 
@@ -454,65 +495,62 @@ output "web_ips" {
 # Tốt hơn count khi resource có tên riêng
 variable "subnets" {
   default = {
-    public-1  = "10.0.1.0/24"
-    public-2  = "10.0.2.0/24"
-    private-1 = "10.0.10.0/24"
-    private-2 = "10.0.11.0/24"
+    "snet-public-1"  = "10.0.1.0/24"
+    "snet-public-2"  = "10.0.2.0/24"
+    "snet-private-1" = "10.0.10.0/24"
+    "snet-private-2" = "10.0.11.0/24"
   }
 }
 
-resource "aws_subnet" "this" {
+resource "azurerm_subnet" "this" {
   for_each = var.subnets
-  
-  vpc_id     = aws_vpc.main.id
-  cidr_block = each.value    # each.key = "public-1", each.value = "10.0.1.0/24"
-  
-  tags = {
-    Name = "${var.project_name}-${each.key}"
-    Type = startswith(each.key, "public") ? "public" : "private"
-  }
+
+  name                 = each.key      # "snet-public-1"
+  address_prefixes     = [each.value]  # ["10.0.1.0/24"]
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.main.name
 }
 
-# Reference: aws_subnet.this["public-1"], aws_subnet.this["private-1"]
+# Reference: azurerm_subnet.this["snet-public-1"]
 
 # For_each với set of strings
-resource "aws_iam_group" "developers" {
+resource "azurerm_resource_group" "teams" {
   for_each = toset(["backend", "frontend", "devops"])
-  name     = each.value
+  name     = "rg-${each.value}"
+  location = var.location
 }
 ```
 
 ### 5.3 Dynamic Blocks
 
 ```hcl
-variable "ingress_rules" {
+variable "security_rules" {
   default = [
-    { port = 80,  protocol = "tcp", cidr = ["0.0.0.0/0"] },
-    { port = 443, protocol = "tcp", cidr = ["0.0.0.0/0"] },
-    { port = 22,  protocol = "tcp", cidr = ["10.0.0.0/8"] },
+    { name = "allow-http",  priority = 100, port = 80,  access = "Allow" },
+    { name = "allow-https", priority = 110, port = 443, access = "Allow" },
+    { name = "allow-ssh",   priority = 120, port = 22,  access = "Allow" },
   ]
 }
 
-resource "aws_security_group" "web" {
-  name   = "web-sg"
-  vpc_id = aws_vpc.main.id
-  
-  # Dynamic block thay vì viết lặp nhiều ingress blocks
-  dynamic "ingress" {
-    for_each = var.ingress_rules
+resource "azurerm_network_security_group" "web" {
+  name                = "nsg-web-${var.environment}"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  # Dynamic block thay vì viết lặp nhiều security_rule blocks
+  dynamic "security_rule" {
+    for_each = var.security_rules
     content {
-      from_port   = ingress.value.port
-      to_port     = ingress.value.port
-      protocol    = ingress.value.protocol
-      cidr_blocks = ingress.value.cidr
+      name                       = security_rule.value.name
+      priority                   = security_rule.value.priority
+      direction                  = "Inbound"
+      access                     = security_rule.value.access
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = tostring(security_rule.value.port)
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
     }
-  }
-  
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 ```
@@ -524,8 +562,8 @@ resource "aws_security_group" "web" {
 ```bash
 # ===== KHỞI TẠO =====
 terraform init
-# → Download providers
-# → Setup backend
+# → Download providers (azurerm, azuread...)
+# → Setup backend (Azure Storage)
 # → Download modules
 # Phải chạy sau khi tạo mới hoặc thêm providers
 
@@ -537,17 +575,17 @@ terraform plan
 # → Không thay đổi gì cả
 
 terraform plan -out=tfplan         # Lưu plan vào file
-terraform plan -destroy             # Plan để destroy tất cả
+terraform plan -destroy            # Plan để destroy tất cả
 
 # ===== APPLY =====
-terraform apply                     # Sẽ hỏi "yes"
-terraform apply -auto-approve       # Không hỏi (dùng trong CI/CD)
-terraform apply tfplan              # Apply từ saved plan (no changes)
+terraform apply                    # Sẽ hỏi "yes"
+terraform apply -auto-approve      # Không hỏi (dùng trong CI/CD)
+terraform apply tfplan             # Apply từ saved plan (no changes)
 
 # ===== XÓA =====
-terraform destroy                   # Xóa tất cả resources
+terraform destroy                  # Xóa tất cả resources
 terraform destroy -auto-approve
-terraform destroy -target=aws_instance.web[0]  # Chỉ xóa 1 resource
+terraform destroy -target=azurerm_linux_virtual_machine.web[0]
 
 # ===== KIỂM TRA =====
 terraform validate    # Validate cú pháp và cấu hình
@@ -557,14 +595,14 @@ terraform fmt -diff   # Hiện diff
 terraform fmt -recursive  # Recursive tất cả files
 
 # ===== STATE =====
-terraform show                      # Xem state hiện tại
-terraform state list                # List resources trong state
-terraform state show aws_vpc.main   # Chi tiết 1 resource
-terraform state mv old_name new_name  # Rename resource trong state
-terraform state rm aws_instance.web[0]  # Remove từ state (không xóa thực tế)
-terraform state pull                # Download state
-terraform state push                # Upload state
-terraform import aws_vpc.main vpc-12345  # Import existing resource
+terraform show                                    # Xem state hiện tại
+terraform state list                              # List resources trong state
+terraform state show azurerm_resource_group.main  # Chi tiết 1 resource
+terraform state mv old_name new_name             # Rename resource trong state
+terraform state rm azurerm_linux_virtual_machine.web[0]  # Remove từ state
+terraform state pull                             # Download state
+terraform state push                             # Upload state
+terraform import azurerm_resource_group.main /subscriptions/.../resourceGroups/rg-myapp  # Import
 
 # ===== WORKSPACE =====
 terraform workspace list
@@ -575,10 +613,10 @@ terraform workspace delete staging
 
 # ===== OUTPUT =====
 terraform output                   # Xem tất cả outputs
-terraform output vpc_id            # Xem output cụ thể
+terraform output vnet_id           # Xem output cụ thể
 terraform output -json             # JSON format
 ```
 
 ---
 
-> **Tiếp theo: Phần 2** - Modules, State Management & Remote Backend
+> **Tiếp theo: Phần 2** - Modules, State Management & Remote Backend (Azure Storage)

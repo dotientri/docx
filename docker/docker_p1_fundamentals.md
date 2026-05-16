@@ -85,7 +85,7 @@ Server Production (Ubuntu 20.04, Python 3.8):
 
 **Docker Daemon (dockerd):** Tiến trình chạy ngầm, thực sự làm mọi việc: build image, tạo/chạy container, quản lý network/storage
 
-**Docker Registry:** Kho lưu trữ Docker images. Docker Hub là registry công khai. Doanh nghiệp thường dùng **private registry** (Harbor, AWS ECR, GCP Artifact Registry)
+**Docker Registry:** Kho lưu trữ Docker images. Docker Hub là registry công khai. Doanh nghiệp thường dùng **private registry** (Harbor, **Azure Container Registry**, GCP Artifact Registry)
 
 ### 2.2 Docker Hoạt Động Như Thế Nào (Bên Dưới)
 

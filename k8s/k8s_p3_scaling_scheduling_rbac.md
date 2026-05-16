@@ -160,14 +160,14 @@ spec:
         topic: job-queue
         lagThreshold: "100"    # Scale khi lag > 100 messages
         
-    # SQS trigger
-    - type: aws-sqs-queue
-      authenticationRef:
-        name: aws-credentials
+    # Azure Service Bus trigger (thay SQS)
+    - type: azure-servicebus
       metadata:
-        queueURL: https://sqs.ap-southeast-1.amazonaws.com/123/myapp-queue
-        queueLength: "50"
-        
+        queueName: myapp-job-queue
+        messageCount: "50"
+      authenticationRef:
+        name: azure-servicebus-auth
+
     # Redis trigger
     - type: redis
       metadata:
@@ -183,22 +183,24 @@ spec:
 # Khi Pods không schedule được vì thiếu tài nguyên → Thêm node
 # Khi nodes nhàn rỗi → Xóa node
 
-# AWS EKS Cluster Autoscaler
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+# AKS Cluster Autoscaler (built-in - không cần cài thêm)
+# Bật khi tạo AKS cluster hoặc cập nhật node pool:
+az aks nodepool update \
+  --resource-group rg-myapp-prod \
+  --cluster-name aks-myapp-prod \
+  --name nodepool1 \
+  --enable-cluster-autoscaler \
+  --min-count 2 \
+  --max-count 20
 
-# Annotate deployment
-kubectl -n kube-system annotate deployment.apps/cluster-autoscaler \
-  cluster-autoscaler.kubernetes.io/safe-to-evict="false"
+# Xem autoscaler status
+kubectl get configmap cluster-autoscaler-status -n kube-system -o yaml
 
-# Update command
-kubectl -n kube-system edit deployment.apps/cluster-autoscaler
-# Add: --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/my-cluster
-# Add: --balance-similar-node-groups
-# Add: --skip-nodes-with-system-pods=false
+# Logs
+kubectl logs -n kube-system -l app=cluster-autoscaler -f
 
-# Node group (AWS Auto Scaling Group) cần tags:
-# k8s.io/cluster-autoscaler/enabled = true
-# k8s.io/cluster-autoscaler/<cluster-name> = owned
+# AKS node pool tự động scale dựa trên resource pressure
+# Không cần tag như AWS ASG
 ```
 
 ---
@@ -488,14 +490,28 @@ metadata:
   name: myapp
   namespace: production
   annotations:
-    # AWS: IRSA (IAM Roles for Service Accounts)
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/MyAppRole
+    # Azure: Workload Identity (thay IRSA của AWS)
+    azure.workload.identity/client-id: "<AZURE_AD_APP_CLIENT_ID>"
+    azure.workload.identity/tenant-id: "<AZURE_TENANT_ID>"
 
 ---
-# Dùng trong Pod
+# Pod phải có label để sử dụng Workload Identity
 spec:
   serviceAccountName: myapp
   automountServiceAccountToken: false  # Tắt nếu không cần K8s API access
+```
+
+```bash
+# Cấu hình AKS Workload Identity:
+az aks update -g rg-myapp-prod -n aks-myapp-prod --enable-oidc-issuer --enable-workload-identity
+
+# Tạo Federated Identity Credential
+az identity federated-credential create \
+  --name fc-myapp \
+  --identity-name mi-myapp \
+  --resource-group rg-myapp-prod \
+  --issuer "$(az aks show -g rg-myapp-prod -n aks-myapp-prod --query oidcIssuerProfile.issuerUrl -o tsv)" \
+  --subject "system:serviceaccount:production:myapp"
 ```
 
 ```bash

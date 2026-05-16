@@ -90,18 +90,18 @@ kind: Service
 metadata:
   name: myapp-lb
   annotations:
-    # AWS annotations
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:..."
-    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-    
+    # Azure Load Balancer annotations (trên AKS)
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"  # external LB
+    service.beta.kubernetes.io/azure-load-balancer-tcp-idle-timeout: "30"
+    service.beta.kubernetes.io/azure-pip-name: "pip-myapp-lb"         # Static public IP
+    service.beta.kubernetes.io/azure-dns-label-name: "myapp-api"      # DNS label
+
 spec:
   type: LoadBalancer
-  
+
   selector:
     app: myapp
-    
+
   ports:
     - name: http
       port: 80
@@ -109,13 +109,13 @@ spec:
     - name: https
       port: 443
       targetPort: 8080
-      
+
   loadBalancerSourceRanges:        # Giới hạn IPs được phép
     - 10.0.0.0/8
     - 203.0.113.0/24
-    
-# Cloud provider tự tạo Load Balancer
-# kubectl get service myapp-lb → EXTERNAL-IP sẽ hiện IP/DNS của LB
+
+# Azure tự tạo Azure Load Balancer
+# kubectl get service myapp-lb → EXTERNAL-IP hiện Public IP của Azure LB
 ```
 
 ### 1.5 Headless Service - Direct Pod IPs
@@ -183,21 +183,22 @@ Internet → Ingress Controller (Nginx) → Service A (api.company.com)
 ### 2.2 Cài Ingress Controller
 
 ```bash
-# ===== NGINX Ingress Controller =====
+# ===== NGINX Ingress Controller (trên AKS) =====
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.0/deploy/static/provider/cloud/deploy.yaml
 
 # Kiểm tra
 kubectl get pods -n ingress-nginx
 kubectl get service -n ingress-nginx ingress-nginx-controller
 
-# ===== AWS ALB Ingress Controller =====
-# Dùng với EKS trên AWS
-helm repo add eks https://aws.github.io/eks-charts
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+# ===== Application Gateway Ingress Controller (AGIC) - Native Azure =====
+# Dùng với AKS + Azure Application Gateway
+helm repo add application-gateway-kubernetes-ingress https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/
+helm install ingress-azure application-gateway-kubernetes-ingress/ingress-azure \
   -n kube-system \
-  --set clusterName=my-cluster \
-  --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller
+  --set appgw.subscriptionId="<SUB_ID>" \
+  --set appgw.resourceGroup="rg-myapp-prod" \
+  --set appgw.name="agw-myapp-prod" \
+  --set armAuth.type=aadPodIdentity
 
 # ===== Traefik =====
 helm repo add traefik https://helm.traefik.io/traefik
@@ -233,9 +234,9 @@ metadata:
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     
-    # AWS ALB (nếu dùng AWS)
-    # kubernetes.io/ingress.class: "alb"
-    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # Azure AGIC (nếu dùng Application Gateway Ingress Controller)
+    # kubernetes.io/ingress.class: "azure/application-gateway"
+    # appgw.ingress.kubernetes.io/ssl-redirect: "true"
     
 spec:
   ingressClassName: nginx
@@ -491,9 +492,28 @@ kubectl create secret docker-registry regcred \
 kubectl get secret myapp-secrets -o jsonpath='{.data.db_password}' | base64 -d
 
 # ===== EXTERNAL SECRETS (Best Practice) =====
-# Dùng External Secrets Operator để sync từ AWS Secrets Manager / Vault
+# Dùng External Secrets Operator để sync từ Azure Key Vault
 
-# ExternalSecret manifest
+# Cài External Secrets Operator
+helm install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace
+
+# SecretStore - trỏ tới Azure Key Vault
+kubectl apply -f - << 'EOF'
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: azure-key-vault
+spec:
+  provider:
+    azurekv:
+      authType: WorkloadIdentity
+      vaultUrl: "https://kv-myapp-prod.vault.azure.net"
+      serviceAccountRef:
+        name: external-secrets-sa
+        namespace: external-secrets
+EOF
+
+# ExternalSecret - sync từ Azure Key Vault vào K8s Secret
 kubectl apply -f - << 'EOF'
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
@@ -503,7 +523,7 @@ metadata:
 spec:
   refreshInterval: 1h     # Sync mỗi giờ
   secretStoreRef:
-    name: aws-secrets-manager    # SecretStore config
+    name: azure-key-vault    # ClusterSecretStore ở trên
     kind: ClusterSecretStore
   target:
     name: myapp-secrets          # K8s Secret sẽ được tạo
@@ -511,12 +531,10 @@ spec:
   data:
     - secretKey: db_password
       remoteRef:
-        key: myapp/prod/database     # AWS Secrets Manager key
-        property: password
+        key: postgres-admin-password   # Azure Key Vault secret name
     - secretKey: api_key
       remoteRef:
-        key: myapp/prod/api
-        property: key
+        key: external-api-key
 EOF
 ```
 
@@ -565,17 +583,22 @@ spec:
   accessModes:
     - ReadWriteOnce          # RWO: 1 node, RWX: many nodes, ROX: many nodes read-only
   persistentVolumeReclaimPolicy: Retain  # Retain, Delete, Recycle
-  storageClassName: standard
-  
-  # Backend storage
-  awsElasticBlockStore:          # AWS EBS
-    volumeID: "vol-0123456789"
-    fsType: ext4
-    
-  # Hoặc NFS:
-  # nfs:
-  #   server: nfs-server.company.com
-  #   path: /exports/myapp
+  storageClassName: managed-premium
+
+  # Azure Disk (CSI driver - khuyến nghị)
+  csi:
+    driver: disk.csi.azure.com
+    volumeHandle: "/subscriptions/<SUB_ID>/resourceGroups/rg-myapp/providers/Microsoft.Compute/disks/myapp-data-disk"
+    volumeAttributes:
+      fsType: ext4
+
+  # Hoặc Azure Files (RWX support):
+  # csi:
+  #   driver: file.csi.azure.com
+  #   volumeHandle: myapp-fileshare
+  #   volumeAttributes:
+  #     shareName: myapp-data
+  #     storageAccountName: myappstorage
 
 ---
 # PersistentVolumeClaim - Developer request storage
@@ -614,22 +637,39 @@ spec:
 # StorageClass cho phép dynamic provisioning
 # Không cần tạo PV thủ công
 
-# AWS EBS StorageClass
+# Azure Disk StorageClass (Premium SSD - khuyến nghị cho production)
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: fast-ssd
+  name: managed-premium
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"  # Mặc định
-provisioner: kubernetes.io/aws-ebs          # Hoặc ebs.csi.aws.com
+provisioner: disk.csi.azure.com
 parameters:
-  type: gp3
-  iopsPerGB: "10"
-  throughput: "125"
-  encrypted: "true"
+  skuName: Premium_LRS       # Premium_LRS, StandardSSD_LRS, Standard_LRS
+  cachingMode: ReadOnly
+  kind: Managed
 reclaimPolicy: Delete                        # Delete PV khi PVC bị xóa
-allowVolumeExpansion: true                   # Cho phép resize
-volumeBindingMode: WaitForFirstConsumer      # Tạo EBS trong AZ của Pod
+allowVolumeExpansion: true                   # Cho phép resize (Azure Disk support)
+volumeBindingMode: WaitForFirstConsumer      # Tạo disk trong AZ của Pod
+
+---
+# Azure Files StorageClass (RWX - nhiều pods mount cùng lúc)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azure-files-premium
+provisioner: file.csi.azure.com
+parameters:
+  skuName: Premium_LRS
+  storageAccount: myappaksfiles
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=0
+  - gid=0
 
 ---
 # PVC với StorageClass (dynamic provisioning)
@@ -865,7 +905,10 @@ spec:
                 - -c
                 - |
                   pg_dump -h $DB_HOST -U $DB_USER $DB_NAME > /backup/$(date +%Y%m%d).sql
-                  aws s3 cp /backup/ s3://company-backups/ --recursive
+                  az storage blob upload-batch \
+                    --destination company-backups \
+                    --source /backup/ \
+                    --account-name myappbackupstore
 ```
 
 ---
