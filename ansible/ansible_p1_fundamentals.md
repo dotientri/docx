@@ -1,43 +1,53 @@
-# ⚙️ ANSIBLE TOÀN TẬP - PHẦN 1: NỀN TẢNG & KIẾN TRÚC
-
+---
+markmap:
+  title: "Ansible Toàn Tập — Nền tảng & Kiến trúc"
+  collapse: false
 ---
 
-## 1. Ansible Là Gì? Tại Sao Dùng Ansible?
+# ⚙️ ANSIBLE TOÀN TẬP - PHẦN 1: NỀN TẢNG & KIẾN TRÚC
 
-### 1.1 Vấn Đề Trước Khi Có Ansible
+## Theory
 
-Trong doanh nghiệp, khi có 100 servers:
+### Ansible là gì & giải pháp
+- Agentless, declarative, idempotent, push-based orchestration tool.
+- Giải quyết vấn đề configuration drift, không reproducible, khó scale.
 
+#### Đặc tính chính
+- Agentless (SSH/WinRM)
+- Idempotent (chạy nhiều lần không gây thay đổi thừa)
+- Declarative: mô tả trạng thái mong muốn
+- Dễ đọc: YAML + mô-đun sẵn có
+
+### Kiến trúc tổng quan
+- Control node: nơi lưu playbooks, inventory, ansible.cfg
+- Managed nodes: servers được quản lý qua SSH/WinRM
+- Ansible Engine: phân tích playbook → thực thi modules → thu thập facts
+
+### Thành phần
+- Inventory, Playbook, Play, Task, Module, Role, Handler, Facts, Variables
+
+## Practice
+
+### Minh họa vấn đề trước Ansible
 ```bash
-# Cách thủ công - SSH từng server
+# Thực thi thủ công trên 100 servers → quá tốn thời gian và lỗi
 ssh server1 "apt update && apt install nginx -y && systemctl enable nginx"
 ssh server2 "apt update && apt install nginx -y && systemctl enable nginx"
-# ... lặp 100 lần
-# → Chậm, dễ sai, không reproducible, không có audit trail
 ```
 
-**Vấn đề:**
-- Không nhất quán (configuration drift)
-- Không scalable
-- Không có documentation tự động
-- Khó rollback
-- Không biết server đang ở trạng thái gì
-
-### 1.2 Ansible Giải Quyết Thế Nào?
-
+### Ví dụ playbook cơ bản (install + enable nginx)
 ```yaml
-# playbook.yml - Mô tả trạng thái mong muốn
 - name: Install and configure Nginx
-  hosts: webservers           # 100 servers
-  become: yes                 # sudo
-  
+  hosts: webservers
+  become: yes
+
   tasks:
     - name: Install Nginx
       apt:
         name: nginx
         state: present
         update_cache: yes
-        
+
     - name: Ensure Nginx is running and enabled
       service:
         name: nginx
@@ -45,364 +55,51 @@ ssh server2 "apt update && apt install nginx -y && systemctl enable nginx"
         enabled: yes
 ```
 
+### Cài đặt control node nhanh
 ```bash
-# Chạy 1 lần → Apply trên 100 servers đồng thời
-ansible-playbook playbook.yml
-# → Nhanh, nhất quán, idempotent, có log
-```
+# Ubuntu/Debian
+sudo apt update && sudo apt install -y ansible
+# hoặc
+pip3 install --user ansible
 
-### 1.3 Đặc Điểm Cốt Lõi Ansible
-
-**1. Agentless:**
-- Không cần cài agent trên managed nodes
-- Chỉ cần SSH (Linux) hoặc WinRM (Windows)
-- So sánh: Chef/Puppet cần agent cài trước
-
-**2. Idempotent:**
-- Chạy playbook nhiều lần = kết quả như chạy 1 lần
-- Chỉ thay đổi gì cần thay đổi → Thao tác an toàn
-- `apt: name=nginx state=present` → Check trước, chỉ install nếu chưa có
-
-**3. Declarative:**
-- Mô tả **"muốn gì"** không phải **"làm thế nào"**
-- `state: present` → Ansible tự biết cách achieve
-
-**4. Simple (YAML + Python):**
-- Không cần học DSL mới
-- YAML dễ đọc, dễ hiểu, dễ review
-
-**5. Push-based:**
-- Control node push config đến managed nodes
-- So sánh: Puppet/Chef là pull-based (agents tự pull)
-
----
-
-## 2. Kiến Trúc Ansible
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Control Node                          │
-│  ┌─────────────┐ ┌──────────┐ ┌────────────────────┐   │
-│  │  Playbooks  │ │Inventory │ │   Ansible Config   │   │
-│  │  (YAML)     │ │  (hosts) │ │   (ansible.cfg)    │   │
-│  └──────┬──────┘ └────┬─────┘ └─────────────────────┘  │
-│         │              │                                  │
-│  ┌──────▼──────────────▼──────┐                         │
-│  │        Ansible Engine       │                         │
-│  │  - Parse playbooks          │                         │
-│  │  - Build task list          │                         │
-│  │  - Connect to hosts         │                         │
-│  │  - Execute modules          │                         │
-│  └─────────────┬───────────────┘                         │
-└────────────────│────────────────────────────────────────┘
-                 │
-        SSH / WinRM / API
-                 │
-     ┌───────────┼───────────┐
-     │           │           │
-┌────▼───┐  ┌────▼───┐  ┌────▼───┐
-│ web01  │  │ web02  │  │ db01   │
-│(Ubuntu)│  │(Ubuntu)│  │(CentOS)│
-└────────┘  └────────┘  └────────┘
-         Managed Nodes
-```
-
-**Các thành phần:**
-
-| Thành Phần | Mô Tả |
-|-----------|-------|
-| **Control Node** | Máy chạy Ansible (laptop, CI server) |
-| **Managed Nodes** | Servers được Ansible quản lý |
-| **Inventory** | Danh sách managed nodes |
-| **Playbook** | YAML file mô tả tasks cần thực hiện |
-| **Play** | Một khối trong playbook (hosts + tasks) |
-| **Task** | Đơn vị nhỏ nhất (gọi 1 module) |
-| **Module** | Đơn vị code thực thi (apt, service, copy...) |
-| **Role** | Tập hợp tasks, variables, files có cấu trúc |
-| **Handler** | Task chỉ chạy khi được notify |
-| **Fact** | Thông tin thu thập từ managed nodes |
-| **Variable** | Biến có thể override ở nhiều cấp |
-
----
-
-## 3. Cài Đặt Ansible
-
-### 3.1 Cài Trên Control Node
-
-```bash
-# ===== UBUNTU/DEBIAN =====
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository --yes --update ppa:ansible/ansible
-sudo apt install ansible -y
-
-# Hoặc qua pip (phiên bản mới nhất)
-pip3 install ansible
-
-# ===== CENTOS/RHEL =====
-sudo dnf install epel-release
-sudo dnf install ansible
-
-# ===== macOS =====
-brew install ansible
-
-# Kiểm tra version
+# Kiểm tra
 ansible --version
-# ansible [core 2.15.0]
-#   config file = /etc/ansible/ansible.cfg
-#   python version = 3.11.0
-#   ansible python module location = ...
 ```
 
-### 3.2 Cấu Hình SSH Keys
-
+### SSH keys và `ansible.cfg` tối thiểu
 ```bash
-# Ansible dùng SSH để kết nối managed nodes
-# Cần SSH key authentication (không dùng password)
+ssh-keygen -t ed25519 -f ~/.ssh/ansible_key -C "ansible@control"
+ssh-copy-id -i ~/.ssh/ansible_key.pub user@host
 
-# Tạo SSH key trên control node
-ssh-keygen -t ed25519 -C "ansible@control-node" -f ~/.ssh/ansible_key
-
-# Copy public key đến tất cả managed nodes
-ssh-copy-id -i ~/.ssh/ansible_key.pub user@web01
-ssh-copy-id -i ~/.ssh/ansible_key.pub user@web02
-ssh-copy-id -i ~/.ssh/ansible_key.pub user@db01
-
-# Test kết nối thủ công
-ssh -i ~/.ssh/ansible_key user@web01 echo "connected"
-
-# ansible.cfg
-cat > ansible.cfg << 'EOF'
+cat > ansible.cfg <<'EOF'
 [defaults]
 inventory = ./inventory
 remote_user = ubuntu
 private_key_file = ~/.ssh/ansible_key
-host_key_checking = False    # Dev only! Enable trong production
-forks = 10                   # Số hosts xử lý song song
-timeout = 30
-log_path = ./ansible.log
-
-[privilege_escalation]
-become = True                # Mặc định dùng sudo
-become_method = sudo
-become_user = root
+host_key_checking = False
+forks = 10
 EOF
 ```
 
----
+### Inventory (tóm tắt)
+- Static INI: nhóm hosts, biến nhóm
+- YAML: cấu trúc cây rõ ràng
+- Dynamic: plugin (cloud/CMDB)
 
-## 4. Inventory - Quản Lý Hosts
-
-### 4.1 Static Inventory
-
-```ini
-# inventory/hosts (INI format)
-
-# Ungrouped hosts
-192.168.1.10
-jumpbox.company.com
-
-# Group: webservers
-[webservers]
-web01.company.com
-web02.company.com ansible_host=192.168.1.21   # Custom hostname
-web03                                           # Sẽ resolve qua DNS
-
-# Variables cho host cụ thể
-web04 ansible_host=192.168.1.24 ansible_port=2222 ansible_user=admin
-
-# Group: databases
-[databases]
-db01.company.com
-db02.company.com
-
-# Group: monitoring
-[monitoring]
-grafana.company.com
-prometheus.company.com
-
-# Group of groups (meta-group)
-[production:children]
-webservers
-databases
-monitoring
-
-# Group variables
-[webservers:vars]
-http_port=80
-https_port=443
-nginx_worker_processes=4
-
-[databases:vars]
-db_port=5432
-max_connections=200
-```
-
-### 4.2 YAML Inventory (Rõ ràng hơn)
-
-```yaml
-# inventory/hosts.yml
-all:
-  children:
-    production:
-      children:
-        webservers:
-          hosts:
-            web01.company.com:
-              ansible_host: 192.168.1.20
-              nginx_worker_processes: 4
-            web02.company.com:
-              ansible_host: 192.168.1.21
-              nginx_worker_processes: 4
-          vars:
-            http_port: 80
-            https_port: 443
-            
-        databases:
-          hosts:
-            db01.company.com:
-              ansible_host: 192.168.1.30
-              pg_max_connections: 200
-            db02.company.com:
-              ansible_host: 192.168.1.31
-              pg_max_connections: 150
-          vars:
-            db_port: 5432
-            
-    staging:
-      children:
-        webservers:
-          hosts:
-            staging-web01:
-              ansible_host: 10.0.1.10
-          vars:
-            http_port: 80
-            env: staging
-```
-
-### 4.3 Dynamic Inventory
-
-```python
-# Inventory script lấy từ nguồn động (AWS, GCP, CMDB...)
-
-# ===== AZURE Dynamic Inventory =====
-pip install msrestazure azure-mgmt-compute
-ansible-galaxy collection install azure.azcollection
-
-# azure_rm.yml
-cat > inventory/azure_rm.yml << 'EOF'
-plugin: azure.azcollection.azure_rm
-auth_source: auto  # Dùng Azure CLI / Service Principal / Managed Identity
-
-# Lọc VMs theo tags
-include_vm_resource_groups:
-  - rg-myapp-prod
-  - rg-myapp-staging
-
-conditional_groups:
-  webservers: "tags.Role == 'web'"
-  databases: "tags.Role == 'db'"
-  production: "tags.Environment == 'production'"
-
-# Variables
-keyed_groups:
-  - prefix: env
-    key: tags.Environment | default('ungrouped')
-  - prefix: role
-    key: tags.Role | default('ungrouped')
-
-# Hostnames - dùng private IP
-hostnames:
-  - private_ipv4
-EOF
-
-# Test
-ansible-inventory -i inventory/azure_rm.yml --list
-ansible -i inventory/azure_rm.yml env_production -m ping
-
-# ===== Custom Dynamic Inventory Script =====
-#!/usr/bin/env python3
-import json
-import sys
-import requests
-
-def get_inventory():
-    # Lấy từ CMDB API
-    response = requests.get('https://cmdb.company.com/api/servers',
-                           headers={'Authorization': 'Bearer TOKEN'})
-    servers = response.json()
-    
-    inventory = {
-        '_meta': {'hostvars': {}},
-        'all': {'children': ['webservers', 'databases']},
-        'webservers': {'hosts': []},
-        'databases': {'hosts': []}
-    }
-    
-    for server in servers:
-        hostname = server['hostname']
-        inventory[server['role'] + 's']['hosts'].append(hostname)
-        inventory['_meta']['hostvars'][hostname] = {
-            'ansible_host': server['ip'],
-            'datacenter': server['datacenter'],
-            'environment': server['environment']
-        }
-    
-    return inventory
-
-if '--list' in sys.argv:
-    print(json.dumps(get_inventory()))
-elif '--host' in sys.argv:
-    print(json.dumps({}))
-```
-
-### 4.4 Inventory Commands
-
+### Lệnh cơ bản
 ```bash
-# Xem tất cả hosts trong inventory
 ansible-inventory --list
-ansible-inventory --graph        # Dạng cây
-ansible-inventory --host web01  # Host variables
-
-# Ping tất cả hosts
 ansible all -m ping
-
-# Ping group cụ thể
-ansible webservers -m ping
-
-# Chạy ad-hoc command
-ansible all -m command -a "uptime"
-ansible webservers -m shell -a "df -h | grep /dev/sda"
-ansible databases -m shell -a "systemctl status postgresql"
-
-# Dry run (check mode)
-ansible all -m ping --check
-
-# Giới hạn hosts
-ansible webservers -m ping --limit web01
-ansible all -m ping --limit 'web01,web02'
-ansible all -m ping --limit '!databases'    # Ngoại trừ databases
+ansible webservers -m shell -a "uptime"
+ansible-playbook playbook.yml
 ```
 
----
+### Tips thực hành
+- Test trên staging trước production
+- Dùng roles để tách concern và tái sử dụng
+- Dùng `--check` và `--diff` để dry-run
+- Bật logging và quản lý secrets (Ansible Vault)
 
-## 5. Ad-Hoc Commands - Chạy Nhanh Không Cần Playbook
-
-```bash
-# Cú pháp: ansible <pattern> -m <module> -a "<arguments>"
-
-# ===== MODULES PHỔ BIẾN =====
-
-# command - Chạy lệnh (không qua shell, không có pipe/redirect)
-ansible all -m command -a "uptime"
-ansible all -m command -a "ls -la /etc/nginx"
-
-# shell - Chạy qua shell (có pipe, redirect, variables)
-ansible all -m shell -a "cat /etc/passwd | wc -l"
-ansible all -m shell -a "echo $HOSTNAME"
-
-# raw - SSH trực tiếp (không cần Python trên remote)
-ansible all -m raw -a "apt-get update"
 
 # copy - Copy file
 ansible webservers -m copy -a "src=nginx.conf dest=/etc/nginx/nginx.conf owner=root mode=0644"
@@ -450,7 +147,6 @@ ansible all -m ping -f 20   # 20 hosts song song
 ansible all -m apt -a "name=nginx state=present" --check --diff
 ```
 
----
 
 ## 6. Facts - Thông Tin Hệ Thống
 
@@ -561,7 +257,3 @@ EOF
 # {{ ansible_local.application.app.version }}
 # {{ ansible_local.maintenance.monitoring }}
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Playbooks, Variables, Templates & Conditionals

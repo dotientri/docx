@@ -1,6 +1,16 @@
+---
+markmap:
+  title: "Git — Tags, Hooks, Workflows & CI/CD"
+  collapse: false
+---
+
 # 🔀 GIT TOÀN TẬP - PHẦN 3: TAGS, HOOKS, WORKFLOWS & CI/CD
 
----
+## Theory
+- Tags ký phiên bản, hooks tự động hoá kiểm tra, và CI/CD gắn với VCS để tự động build/test/deploy.
+
+## Practice
+- Dùng annotated tags cho releases, pre-commit để enforce lint/tests locally, và tích hợp git triggers vào pipeline.
 
 ## 1. Git Tags - Đánh Dấu Phiên Bản
 
@@ -84,7 +94,6 @@ Bug fixes:
 git push origin main --follow-tags
 ```
 
----
 
 ## 2. Git Hooks - Tự Động Hóa
 
@@ -293,7 +302,6 @@ npm install --save-dev lint-staged
 npx lint-staged
 ```
 
----
 
 ## 3. Git Aliases - Tăng Tốc Độ Làm Việc
 
@@ -333,7 +341,6 @@ git undo        # Undo last commit
 git prune-branches  # Dọn branches
 ```
 
----
 
 ## 4. Git trong CI/CD
 
@@ -502,7 +509,6 @@ git commit -m "chore: deploy myapp:${COMMIT_SHA}"
 git push origin main
 ```
 
----
 
 ## 5. Git Submodules & Subtrees
 
@@ -556,7 +562,6 @@ git subtree pull --prefix libs/shared-lib https://github.com/company/shared-lib.
 git subtree push --prefix libs/shared-lib https://github.com/company/shared-lib.git main
 ```
 
----
 
 ## 6. Tìm Lỗi Nhanh với git bisect
 
@@ -600,7 +605,6 @@ git bisect run /tmp/test.sh
 # → Tự động tìm commit bad!
 ```
 
----
 
 ## 7. Git Large File Storage (LFS)
 
@@ -632,7 +636,3 @@ git lfs ls-files
 # Pull LFS files
 git lfs pull
 ```
-
----
-
-> **Tiếp theo: Phần 4** - GitHub/GitLab Workflows, Code Review, Branch Protection & Advanced Patterns

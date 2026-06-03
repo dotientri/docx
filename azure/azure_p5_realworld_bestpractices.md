@@ -1,6 +1,18 @@
+---
+markmap:
+  title: "Azure — Real-World Scenarios & Best Practices"
+  collapse: false
+---
+
 # ☁️ AZURE TOÀN TẬP - PHẦN 5: REAL-WORLD SCENARIOS, BEST PRACTICES & CHEAT SHEET
 
----
+## Theory
+- Thực tế production cần architecture cho availability, security, scaling, logging và disaster recovery.
+- AKS, ACR, Front Door, managed DBs và messaging services hợp thành stack microservices điển hình.
+
+## Practice
+- Tự động hóa infra bằng script/ARM/Bicep/Terraform; deploy container images qua ACR → AKS với CI/CD.
+- Thiết lập health checks, probes, autoscaling (HPA), và backup/restore cho DB; dùng Key Vault cho secrets.
 
 ## 1. Real-World: Microservices trên AKS
 
@@ -159,7 +171,6 @@ echo "Redis: ${REDIS_CACHE}.redis.cache.windows.net"
 echo "Key Vault: ${KEY_VAULT}.vault.azure.net"
 ```
 
----
 
 ## 2. CI/CD End-to-End: GitHub Actions → Azure
 
@@ -287,7 +298,6 @@ jobs:
           kubectl get pods -n production -l app=myapp
 ```
 
----
 
 ## 3. Azure Best Practices
 
@@ -369,7 +379,6 @@ jobs:
    - Performance testing
 ```
 
----
 
 ## 4. Azure CLI Cheat Sheet
 
@@ -478,7 +487,6 @@ az vm --help
 az vm create --help
 ```
 
----
 
 ## 5. Azure vs AWS vs GCP
 
@@ -503,26 +511,25 @@ az vm create --help
 | Monitoring | Azure Monitor | CloudWatch | Cloud Monitoring |
 | IaC | Bicep/Terraform | CloudFormation/Terraform | Deployment Manager |
 
-**Chọn Azure khi:**
+### Chọn Azure khi
 - Microsoft/Windows ecosystem (Office 365, Active Directory)
 - Hybrid cloud với on-premise
 - .NET/SQL Server workloads
 - Enterprise compliance requirements
 - Microsoft partnership/licenses
 
-**Chọn AWS khi:**
+### Chọn AWS khi
 - Largest ecosystem và service selection
 - Khởi đầu cloud journey
 - Global scale workloads
 - Community và third-party support lớn nhất
 
-**Chọn GCP khi:**
+### Chọn GCP khi
 - Data analytics và ML/AI (BigQuery, Vertex AI)
 - Kubernetes (GKE là K8s thành thục nhất)
 - Workloads cần Google's network infrastructure
 - Open source friendly
 
----
 
 > **Hoàn thành Azure Toàn Tập! Toàn bộ knowledge base DevOps đã hoàn thiện!**
 

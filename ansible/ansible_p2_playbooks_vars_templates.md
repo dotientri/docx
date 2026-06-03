@@ -1,6 +1,20 @@
+---
+markmap:
+  title: "Ansible — Playbooks, Variables & Templates"
+  collapse: false
+---
+
 # ⚙️ ANSIBLE TOÀN TẬP - PHẦN 2: PLAYBOOKS, VARIABLES & TEMPLATES
 
----
+## Theory
+- Playbooks là cách mô tả trạng thái mong muốn (declarative) bằng YAML.
+- Variables điều khiển cấu hình ở nhiều cấp độ (precedence rất quan trọng).
+- Templates (Jinja2) giúp sinh cấu hình động, tái sử dụng.
+
+## Practice
+- Viết playbook theo cấu trúc: plays → tasks → handlers → roles.
+- Sử dụng `vars_files`, `group_vars`, `host_vars` và `extra-vars` hợp lý.
+- Test templates và validate khi deploy (validate parameter trên module `template`).
 
 ## 1. Playbook - Cấu Trúc Đầy Đủ
 
@@ -142,7 +156,6 @@ ansible-playbook site.yml --skip-tags deploy
 # all: Chạy tất cả (default)
 ```
 
----
 
 ## 2. Variables - Hệ Thống Biến
 
@@ -169,7 +182,7 @@ Thấp nhất → Cao nhất:
 (Thấp nhất)
 ```
 
-**Thực tế cần nhớ:**
+#### Thực tế cần nhớ
 ```
 extra-vars > host_vars > group_vars > role defaults
 ```
@@ -337,7 +350,6 @@ tasks:
     line: "max_memory: {{ max_memory_mb }}m"
 ```
 
----
 
 ## 3. Jinja2 Templates
 
@@ -612,7 +624,6 @@ autovacuum_max_workers = {{ pg_autovacuum_workers | default(3) }}
 autovacuum_naptime = 1min
 ```
 
----
 
 ## 4. Conditionals & Loops
 
@@ -786,7 +797,6 @@ tasks:
     delay: 5                       # Chờ 5s giữa lần thử
 ```
 
----
 
 ## 5. Error Handling
 
@@ -859,7 +869,6 @@ tasks:
           create: yes
 ```
 
----
 
 ## 6. Include & Import - Code Reuse
 
@@ -893,7 +902,3 @@ tasks:
         file: vars/secrets.yml
         name: secrets                               # Namespace variables
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Roles, Galaxy & Advanced Patterns

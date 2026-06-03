@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terraform — Azure Complete"
+  collapse: false
+# ---
+
 # 🏗️ TERRAFORM TOÀN TẬP - PHẦN 3B: AZURE INFRASTRUCTURE HOÀN CHỈNH
 
----
+## Theory
+- A full Azure reference architecture combines networking, AKS, databases, and secrets management; modules and environments enable repeatable deployments.
+
+## Practice
+- Organize `environments/` and `modules/`, enable backend versioning, and automate CI/CD for plan/apply with approval gates and drift detection.
 
 ## 1. Dự Án Hoàn Chỉnh: 3-Tier Web App trên Azure
 
@@ -48,7 +58,6 @@ myapp-azure-terraform/
     └── monitoring/       # Log Analytics, Azure Monitor
 ```
 
----
 
 ## 2. Backend Configuration (Azure Storage)
 
@@ -95,7 +104,6 @@ az storage account blob-service-properties update \
   --enable-versioning true
 ```
 
----
 
 ## 3. Root Module - Gọi Tất Cả Azure Modules
 
@@ -278,7 +286,6 @@ output "key_vault_uri"       { value = module.keyvault.vault_uri }
 output "log_analytics_id"    { value = module.monitoring.log_analytics_workspace_id }
 ```
 
----
 
 ## 4. Module Redis
 
@@ -326,7 +333,6 @@ output "redis_primary_key"      { value = azurerm_redis_cache.main.primary_acces
 output "redis_connection_string"{ value = azurerm_redis_cache.main.primary_connection_string; sensitive = true }
 ```
 
----
 
 ## 5. Terraform với Azure DevOps CI/CD
 
@@ -471,6 +477,5 @@ stages:
                     ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID_PROD)
 ```
 
----
 
 > **Xem thêm:** `terraform/terragrunt/` cho DRY IaC, `azure/` cho Azure services chi tiết

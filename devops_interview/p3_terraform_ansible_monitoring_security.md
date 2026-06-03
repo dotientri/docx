@@ -1,10 +1,19 @@
+---
+markmap:
+  title: "DevOps Interview — CI/CD, Terraform, Monitoring, Security"
+  collapse: false
+---
+
 # 🎯 DEVOPS INTERN INTERVIEW - CI/CD, TERRAFORM, MONITORING, SECURITY
 
----
+## Theory
+- Explain CI/CD lifecycle, IaC patterns, monitoring pillars (metrics/logs/traces), and security best practices for CI pipelines and runtime.
+
+## Practice
+- Include full CI pipeline examples, terraform workflow (plan/apply), monitoring alert examples, and secrets management patterns (Vault/Key Vault/Ansible Vault).
 
 ## PHẦN 1: CI/CD (CHI TIẾT)
 
----
 
 ### Q1. Giải thích toàn bộ quy trình CI/CD pipeline từ A → Z?
 
@@ -84,7 +93,6 @@ CD PIPELINE (Deploy sau CI pass)
     - Update Jira/Linear ticket
 ```
 
----
 
 ### Q2. Viết GitHub Actions pipeline đầy đủ?
 
@@ -334,7 +342,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 ```
 
----
 
 ### Q3. Tại sao phải dùng Git branching strategy?
 
@@ -365,11 +372,9 @@ Trunk-Based Development (Modern, preferred với CI/CD):
 - Phù hợp với high-frequency deploys
 ```
 
----
 
 ## PHẦN 2: TERRAFORM
 
----
 
 ### Q4. Giải thích Terraform workflow từ đầu đến cuối?
 
@@ -417,7 +422,6 @@ terraform taint resource    # Force recreate on next apply (deprecated → use -
 terraform apply -replace=azurerm_virtual_machine.web  # Force recreate specific resource
 ```
 
----
 
 ### Q5. Terraform modules - viết module cho Azure AKS?
 
@@ -549,11 +553,9 @@ module "aks_production" {
 }
 ```
 
----
 
 ## PHẦN 3: MONITORING
 
----
 
 ### Q6. Giải thích Prometheus scraping và alerting?
 
@@ -641,7 +643,6 @@ groups:
       summary: "Node {{ $labels.instance }} disk is >85% full"
 ```
 
----
 
 ### Q7. Khi nào dùng metrics vs logs vs traces?
 
@@ -677,11 +678,9 @@ Ví dụ thực tế:
   Bottleneck: Database query mất 1.8s (traces + database metrics)
 ```
 
----
 
 ## PHẦN 4: SECURITY
 
----
 
 ### Q8. Làm thế nào để bảo mật CI/CD pipeline?
 
@@ -721,15 +720,13 @@ Ví dụ thực tế:
    ✅ Signed commits (GPG)
 ```
 
----
 
 ## PHẦN 5: CÂU HỎI HÀNH VI (BEHAVIORAL)
 
----
 
 ### "Kể về lần bạn làm hỏng production. Bạn đã làm gì?"
 
-**Cấu trúc STAR:**
+#### Cấu trúc STAR
 ```
 Situation: Tôi đang deploy version mới của API service lúc 14h.
 Task: Deploy hotfix cho bug authentication.
@@ -753,7 +750,6 @@ Lessons learned:
   - Chuẩn bị rollback script sẵn
 ```
 
----
 
 ### "Bạn không đồng ý với quyết định kỹ thuật của Senior Dev. Bạn làm gì?"
 
@@ -782,7 +778,6 @@ Cách tiếp cận chuyên nghiệp:
 → KHÔNG bao giờ: Escalate lên manager ngay mà chưa nói thẳng
 ```
 
----
 
 ### Questions bạn NÊN hỏi interviewer?
 
@@ -804,7 +799,6 @@ Role:
   "Team size và structure như thế nào?"
 ```
 
----
 
 ## CHEAT SHEET - CÁC CON SỐ CẦN NHỚ
 

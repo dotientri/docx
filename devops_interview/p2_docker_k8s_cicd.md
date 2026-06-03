@@ -1,10 +1,19 @@
+---
+markmap:
+  title: "DevOps Interview — Docker & Kubernetes"
+  collapse: false
+---
+
 # 🎯 DEVOPS INTERN INTERVIEW - DOCKER & KUBERNETES (CHI TIẾT ĐẦY ĐỦ)
 
----
+## Theory
+- Container runtime architecture, image layering, networking models, and orchestration concepts (pods, services, deployments) are key.
+
+## Practice
+- Provide sample multi-stage Dockerfile, networking examples, compose files, and Kubernetes manifests with probes, readiness/liveness, and HPA examples.
 
 ## PHẦN 1: DOCKER
 
----
 
 ### Q1. Docker hoạt động như thế nào? Giải thích kiến trúc?
 
@@ -43,11 +52,10 @@ Kernel features Docker dùng:
 - UnionFS: Layer filesystem (overlay2, aufs)
 ```
 
-**Container KHÔNG phải VM:**
+#### Container KHÔNG phải VM
 - Container: Processes chạy trực tiếp trên kernel host, isolated bởi namespaces
 - VM: OS riêng, chạy trên hypervisor, nặng hơn nhiều
 
----
 
 ### Q2. Viết Dockerfile chuẩn cho Node.js app?
 
@@ -118,13 +126,12 @@ ENTRYPOINT ["node"]
 CMD ["dist/index.js"]
 ```
 
-**Giải thích tại sao multi-stage:**
+## Giải thích tại sao multi-stage
 - Stage `deps`: Separate dev và prod dependencies
 - Stage `builder`: Chỉ cần khi build (TypeScript, Webpack, etc.)
 - Stage `production`: Final image không có dev tools, source code TS, chỉ có compiled output
 - **Kết quả**: Image giảm từ ~800MB → ~150MB
 
----
 
 ### Q3. Docker layer caching - tại sao COPY package.json TRƯỚC?
 
@@ -144,12 +151,11 @@ COPY . .                                  # Code changes chỉ ảnh hưởng t�
 RUN npm run build
 ```
 
-**Nguyên tắc cache:**
+## Nguyên tắc cache
 - Docker cache một layer nếu: layer đó và tất cả layers TRƯỚC nó không thay đổi
 - Sắp xếp: những gì ít thay đổi nhất → lên đầu
 - `COPY . .` luôn invalidate cache → để cuối cùng
 
----
 
 ### Q4. Docker networking - giải thích chi tiết từng loại?
 
@@ -195,7 +201,6 @@ docker run -p 127.0.0.1:8080:3000 nginx   # Chỉ bind localhost
 docker run -P nginx            # Auto-map random ports
 ```
 
----
 
 ### Q5. Docker Compose cho development environment?
 
@@ -334,7 +339,6 @@ docker compose pull                     # Pull latest images
 docker compose scale worker=3           # Scale service
 ```
 
----
 
 ### Q6. Debug Docker containers?
 
@@ -385,11 +389,9 @@ dive myapp:latest                      # Interactive layer explorer (tool)
 # 5. Environment var không có → kiểm tra --env-file, docker inspect
 ```
 
----
 
 ## PHẦN 2: KUBERNETES (CHI TIẾT)
 
----
 
 ### Q7. Kubernetes kiến trúc - giải thích từng component?
 
@@ -429,7 +431,7 @@ dive myapp:latest                      # Interactive layer explorer (tool)
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Khi bạn chạy `kubectl apply -f deployment.yaml` điều gì xảy ra?**
+#### Khi bạn chạy `kubectl apply -f deployment.yaml` điều gì xảy ra?
 ```
 1. kubectl gửi request đến kube-apiserver
 2. API server authenticate (RBAC) và validate YAML
@@ -442,7 +444,6 @@ dive myapp:latest                      # Interactive layer explorer (tool)
 9. kubectl rollout status hiển thị tiến trình
 ```
 
----
 
 ### Q8. Pod lifecycle và trạng thái?
 
@@ -477,7 +478,6 @@ kubectl get events -n production --sort-by='.lastTimestamp'  # Cluster events
 | `OOMKilled` | Vượt memory limit | Tăng `resources.limits.memory` |
 | `ContainerCreating` (lâu) | PV mount fail, secret/configmap missing | `kubectl describe pod` → Events |
 
----
 
 ### Q9. Services trong Kubernetes - giải thích TỪNG loại kèm use case?
 
@@ -555,7 +555,6 @@ spec:
 # Use case: Kết nối managed cloud DB mà không thay đổi app code
 ```
 
----
 
 ### Q10. Ingress - tại sao cần Ingress?
 
@@ -623,7 +622,6 @@ spec:
               number: 80
 ```
 
----
 
 ### Q11. Resource Requests và Limits - tại sao quan trọng?
 
@@ -643,12 +641,12 @@ containers:
       cpu: "500m"         # Vượt quá → CPU throttled (không bị kill)
 ```
 
-**Tại sao PHẢI set resources:**
+## Tại sao PHẢI set resources
 - **Không có requests**: Scheduler không biết đặt pod lên node nào → có thể overload node
 - **Không có limits**: 1 pod có thể dùng hết tài nguyên → ảnh hưởng pods khác (noisy neighbor)
 - **OOMKilled**: App dùng nhiều hơn memory limit → Linux kernel kill process → `CrashLoopBackOff`
 
-**Best practice:**
+## Best practice
 ```yaml
 # Dùng VPA (Vertical Pod Autoscaler) để recommend values
 # Bắt đầu với:
@@ -660,7 +658,6 @@ requests: cpu=100m, memory=128Mi
 limits: cpu=500m, memory=512Mi
 ```
 
----
 
 ### Q12. Deployment strategy thực tế?
 
@@ -694,7 +691,6 @@ kubectl rollout history deployment/api           # Xem history
 kubectl rollout status deployment/api            # Monitor progress
 ```
 
----
 
 ### Q13. ConfigMap và Secret - best practices?
 
@@ -736,11 +732,9 @@ volumes:
     name: app-config
 ```
 
----
 
 ## PHẦN 3: TÌNH HUỐNG THỰC TẾ KHI PHỎNG VẤN
 
----
 
 ### "Production pod đột ngột crash, bạn xử lý như thế nào?"
 

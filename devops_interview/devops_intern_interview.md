@@ -1,6 +1,16 @@
+---
+markmap:
+  title: "DevOps Intern Interview Guide"
+  collapse: false
+---
+
 # 🎯 DEVOPS INTERN INTERVIEW GUIDE
 
----
+## Theory
+- Các chủ đề cốt lõi: version control, CI/CD, containers, orchestration, IaC, cloud, monitoring, security, automation.
+
+## Practice
+- Thực hành: templates câu trả lời, ví dụ pipelines, Dockerfile sample, Terraform backend snippet, và scripts kiểm thử nhanh.
 
 ## 1. Core Concepts
 
@@ -18,7 +28,6 @@
 | **Testing** | Unit, integration, end‑to‑end, contract testing, test containers, CI test reporting | *What is the difference between unit and integration tests in a pipeline?* |
 | **Troubleshooting** | Log analysis, `kubectl exec`, `kubectl debug`, `kubectl top`, network diagnostics, Helm rollback, diffing manifests | *Debug a failing Helm upgrade.* |
 
----
 
 ## 2. Frequently Asked Practical Tasks
 
@@ -30,7 +39,6 @@
 6. **Configure a Prometheus alert for pod restarts > 3 in 5 min**
 7. **Explain how to migrate a legacy VM‑based app to a container‑first architecture**
 
----
 
 ## 3. Soft‑Skills & Culture Fit
 
@@ -39,7 +47,6 @@
 - **Continuous Learning** – Staying up‑to‑date with cloud‑native tools.
 - **Automation Mindset** – “Never manually do something that can be scripted.”
 
----
 
 ## 4. Quick Cheat‑Sheet
 
@@ -74,6 +81,5 @@ kubectl exec -it $POD -- sh
 kubectl top nodes
 ```
 
----
 
 > **Tip:** Tailor your answers with real‑world examples from the projects you’ve built (e.g., the Jenkins‑Azure integration you just documented).

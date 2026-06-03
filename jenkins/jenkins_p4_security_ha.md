@@ -1,6 +1,16 @@
+---
+markmap:
+  title: "Jenkins — Security, HA & Best Practices"
+  collapse: false
+---
+
 # 🔧 JENKINS TOÀN TẬP - PHẦN 4: SECURITY, HA & BEST PRACTICES
 
----
+## Theory
+- Secure Jenkins by enforcing RBAC, secrets management, audit logging, and minimizing attack surface (agents separation).
+
+## Practice
+- Integrate Azure AD for auth, use Key Vault for secrets, enable audit trail, and deploy Jenkins in HA mode with persistent storage and backup.
 
 ## 1. Jenkins Security
 
@@ -139,7 +149,6 @@ unclassified:
           log: /var/log/jenkins/audit.log
 ```
 
----
 
 ## 2. High Availability Jenkins
 
@@ -317,7 +326,6 @@ az storage blob list \
 echo "=== Backup hoàn thành: jenkins-backup-${BACKUP_DATE}.tar.gz ==="
 ```
 
----
 
 ## 3. Performance Tuning
 
@@ -348,7 +356,6 @@ Jenkins.instance.getAllItems(Job.class).each { job ->
 }
 ```
 
----
 
 ## 4. Jenkins Best Practices
 
@@ -428,7 +435,3 @@ build-timeout:1.31
 timestamper:1.26
 build-discarder:1.05
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Jenkins Troubleshooting, Groovy Scripting & Real-world Scenarios

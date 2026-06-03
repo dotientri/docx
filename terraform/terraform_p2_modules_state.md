@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terraform — Modules & State Management"
+  collapse: false
+# ---
+
 # 🏗️ TERRAFORM TOÀN TẬP - PHẦN 2: MODULES & STATE MANAGEMENT
 
----
+## Theory
+- Modules encapsulate reusable infrastructure pieces; remote state with locking and workspaces prevent drift and enable team collaboration.
+
+## Practice
+- Structure modules under `modules/`, keep `variables.tf`/`outputs.tf` clear, and use remote backends (Azure Storage, S3) with state locking and versioning.
 
 ## 1. Terraform Modules
 
@@ -338,7 +348,6 @@ module "aks" {
 }
 ```
 
----
 
 ## 2. State Management
 
@@ -538,7 +547,6 @@ resource "azurerm_kubernetes_cluster" "main" {
 }
 ```
 
----
 
 ## 3. Workspaces
 
@@ -569,7 +577,6 @@ locals {
 }
 ```
 
----
 
 ## 4. Terragrunt - DRY Terraform
 
@@ -646,7 +653,6 @@ terragrunt run-all apply --terragrunt-non-interactive
 terragrunt run-all plan --terragrunt-include-dir ./networking
 ```
 
----
 
 ## 5. Cheat Sheet
 
@@ -691,7 +697,3 @@ terraform apply -auto-approve
 terraform plan -out=tfplan
 terraform show -json tfplan | jq .
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Terraform Azure Infrastructure hoàn chỉnh (AKS, ACR, PostgreSQL, Redis)

@@ -1,6 +1,19 @@
+---
+markmap:
+  title: "Git — Internals & Troubleshooting"
+  collapse: false
+---
+
 # 🔀 GIT TOÀN TẬP - PHẦN 5: ADVANCED INTERNALS, TROUBLESHOOTING & SCENARIOS THỰC TẾ
 
----
+## Theory
+- Git object model (blobs, trees, commits, refs), packfiles và GC ảnh hưởng tới storage và performance.
+
+## Practice
+- Thực hành: `git fsck`, `git reflog`, recover commits, inspect packfiles, and use `git gc`/shallow clones for CI optimization.
+
+# 🔀 GIT TOÀN TẬP - PHẦN 5: ADVANCED INTERNALS, TROUBLESHOOTING & SCENARIOS THỰC TẾ
+
 
 ## 1. Git Internals - Đào Sâu Bên Trong
 
@@ -121,7 +134,6 @@ git config gc.reflogExpireUnreachable 30.days
 git reflog --date=iso
 ```
 
----
 
 ## 2. Troubleshooting - Xử Lý Vấn Đề Thực Tế
 
@@ -273,7 +285,6 @@ git log --max-count=100          # Giới hạn số commits
 git log --since="1 month ago"    # Giới hạn theo thời gian
 ```
 
----
 
 ## 3. Advanced Scenarios Thực Tế
 
@@ -437,7 +448,6 @@ git log -S "def old_payment_method" --diff-filter=D
 git log --all --stat -- "services/payment/**" | grep -E "^commit|\.py"
 ```
 
----
 
 ## 4. Git Configuration Nâng Cao
 
@@ -518,7 +528,6 @@ vendor/**       linguist-vendored
 docs/           linguist-documentation
 ```
 
----
 
 ## 5. Cheat Sheet Tổng Hợp
 
@@ -583,7 +592,6 @@ Merge conflict?
 └── Dùng version của mình/họ → git checkout --ours/--theirs <file>
 ```
 
----
 
 ## 6. Git Trong Môi Trường Doanh Nghiệp
 
@@ -688,6 +696,5 @@ gh pr list --state merged --limit 100 --json mergedAt,createdAt,title | \
   }]'
 ```
 
----
 
 > **Hoàn thành Git Toàn Tập!** Phần tiếp theo: Network Fundamentals

@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Linux — Networking, SSH & Storage"
+  collapse: false
+# ---
+
 # 🐧 LINUX TOÀN TẬP - PHẦN 4: NETWORKING, SSH & STORAGE
 
----
+## Theory
+- Networking basics (interfaces, routing, DNS) and secure remote access (SSH) are crucial; storage management uses mounts, filesystems, and LVM for durable data.
+
+## Practice
+- Use `ip`, `netplan`/`nmcli`, `dig/nslookup`, `tcpdump`, and `rsync`; secure SSH with keys, disable password auth, and manage disks with `lsblk`, `mount`, and LVM tools.
 
 ## 1. Networking Cơ Bản
 
@@ -164,7 +174,6 @@ telnet hostname 80
 # Ctrl+] rồi quit để thoát
 ```
 
----
 
 ## 2. SSH - Secure Shell
 
@@ -379,7 +388,6 @@ MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
 KexAlgorithms curve25519-sha256,diffie-hellman-group16-sha512
 ```
 
----
 
 ## 3. Firewall
 
@@ -483,7 +491,6 @@ sudo iptables-save > /etc/iptables/rules.v4
 sudo apt install iptables-persistent  # Tự load khi boot
 ```
 
----
 
 ## 4. Storage Management
 
@@ -644,7 +651,6 @@ sudo lvcreate -L 5G -s -n db-snapshot /dev/data-vg/db-lv
 sudo lvconvert --merge /dev/data-vg/db-snapshot
 ```
 
----
 
 ## 5. Cấu Hình Hostname & Hosts
 
@@ -663,7 +669,3 @@ cat >> /etc/hosts << 'EOF'
 192.168.1.100  monitoring.internal
 EOF
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Systemd, Shell Scripting, Cron, Security Hardening, và Thực Chiến Doanh Nghiệp

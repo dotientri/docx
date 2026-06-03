@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Linux — Users, Permissions & Processes"
+  collapse: false
+# ---
+
 # 🐧 LINUX TOÀN TẬP - PHẦN 3: USERS, PERMISSIONS, PROCESSES & MONITORING
 
----
+## Theory
+- User/group model, Unix permissions, ACLs, and process lifecycle underpin system security and multi-tenant isolation; monitoring processes and resources prevents outages.
+
+## Practice
+- Manage users with `useradd/usermod`, enforce least privilege via groups/sudoers, inspect processes with `ps/top/htop`, and monitor resources with `vmstat` and `sar`.
 
 ## 1. Quản Lý Users & Groups
 
@@ -148,7 +158,6 @@ cat /etc/sudoers.d/devops
 # (% trước tên = group)
 ```
 
----
 
 ## 2. Phân Quyền Chi Tiết
 
@@ -262,7 +271,6 @@ setfacl -R -m g:team1:rwx /projects/myapp/
 setfacl -R -d -m g:team1:rwx /projects/myapp/
 ```
 
----
 
 ## 3. Process Management
 
@@ -411,7 +419,6 @@ renice -n 15 -u tripheo     # Giảm priority tất cả processes của user
 nice -n 19 tar -czvf backup.tar.gz /var/lib/database/ &
 ```
 
----
 
 ## 4. System Monitoring
 
@@ -553,7 +560,6 @@ grep "ERROR" /var/log/app.log | tail -20                      # 20 lỗi gần n
 awk '/ERROR/{print $0}' /var/log/app.log | sort | uniq -c    # Group lỗi
 ```
 
----
 
 ## 5. Package Management
 
@@ -657,7 +663,3 @@ flatpak install flathub org.gimp.GIMP
 # Cách 5: Script cài đặt (phổ biến)
 curl -fsSL https://get.docker.com | sh
 ```
-
----
-
-> **Tiếp theo: Phần 4** - Networking, SSH, Firewall, và Storage Management

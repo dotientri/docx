@@ -1,6 +1,18 @@
+---
+markmap:
+  title: "Azure — DevOps, Monitoring & IaC (Bicep/Terraform)"
+  collapse: false
+---
+
 # ☁️ AZURE TOÀN TẬP - PHẦN 3: AZURE DEVOPS, MONITORING & BICEP/TERRAFORM
 
----
+## Theory
+- Azure DevOps provides CI/CD, artifact and pipeline management; IaC via Bicep/Terraform for reproducible infra.
+- Monitoring best practices: metrics, logs, alerts, and instrumentation (Azure Monitor, Log Analytics).
+
+## Practice
+- Build pipelines with lint/test/build/deploy stages; store secrets in Azure Key Vault and link to pipelines.
+- Define infra in Bicep or Terraform, use IaC pipelines to plan/apply with approvals and drift detection.
 
 ## 1. Azure DevOps - CI/CD Platform
 
@@ -249,7 +261,6 @@ az devops variable-group variable create \
 # Trong Azure DevOps UI: Library → Variable Groups → Link Azure Key Vault secrets
 ```
 
----
 
 ## 2. Azure Monitor - Monitoring & Observability
 
@@ -413,7 +424,6 @@ useAzureMonitor({
 // - Custom events và metrics
 ```
 
----
 
 ## 3. Infrastructure as Code trên Azure
 
@@ -740,7 +750,3 @@ resource "azurerm_postgresql_flexible_server" "main" {
   }
 }
 ```
-
----
-
-> **Tiếp theo: Phần 4** - Azure Security, Networking Advanced & Cost Management

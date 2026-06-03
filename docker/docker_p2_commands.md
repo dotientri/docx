@@ -1,6 +1,19 @@
 # 🐳 DOCKER TOÀN TẬP - PHẦN 2: LỆNH CƠ BẢN & LÀM VIỆC VỚI CONTAINER
 
+
 ---
+markmap:
+  title: "Docker — Commands & Scripts"
+  collapse: false
+---
+
+# DOCKER TOÀN TẬP - PHẦN 2: LỆNH CƠ BẢN & LÀM VIỆC VỚI CONTAINER
+
+## Theory
+- Hiểu lifecycle: image vs container, volumes, networks, and how CLI maps to daemon APIs.
+
+## Practice
+- Thực hành các lệnh `docker run`, `build`, `ps`, `logs`, `exec`, `volume`, `network`, và scripting để automate workflows.
 
 ## 1. Các Lệnh Docker Cơ Bản - Images
 
@@ -80,7 +93,6 @@ docker image prune -a
 docker system prune -a
 ```
 
----
 
 ## 2. Chạy Containers - `docker run`
 
@@ -183,7 +195,7 @@ docker stats
 docker stats backend-api   # Chỉ xem 1 container
 ```
 
-**Giải thích `--memory-swap`:**
+## Giải thích `--memory-swap`
 - `--memory-swap` = tổng RAM + swap
 - Nếu `--memory="512m"` và `--memory-swap="1g"` → swap = 512MB
 - Nếu `--memory-swap="512m"` (= --memory) → tắt swap hoàn toàn
@@ -205,7 +217,6 @@ docker run --restart=unless-stopped nginx
 docker run --restart=on-failure:5 nginx
 ```
 
----
 
 ## 3. Quản Lý Containers Đang Chạy
 
@@ -331,7 +342,6 @@ docker inspect --format='{{.Name}} - {{.NetworkSettings.IPAddress}}' \
   $(docker ps -q)
 ```
 
----
 
 ## 4. Volumes - Lưu Trữ Dữ Liệu Bền Vững
 
@@ -422,7 +432,6 @@ docker run -d \
   bash -c "pip install flask && python /app/app.py"
 ```
 
----
 
 ## 5. Networking Cơ Bản
 
@@ -479,7 +488,7 @@ docker run -d \
 docker exec backend-api ping postgres-db
 ```
 
-**Tại sao dùng custom network thay vì default bridge?**
+## Tại sao dùng custom network thay vì default bridge?
 - **Custom bridge:** Containers liên lạc qua **tên container** (DNS tự động)
 - **Default bridge:** Containers chỉ liên lạc qua **IP** (phải hardcode)
 
@@ -500,7 +509,6 @@ docker run -d --network host nginx:alpine
 # nginx chạy ở port 80 của HOST machine luôn
 ```
 
----
 
 ## 6. Thực Hành: Chạy Stack Thực Tế
 
@@ -569,7 +577,6 @@ docker run --rm \
 # ubuntu: dùng ubuntu như một "công cụ" để chạy tar
 ```
 
----
 
 ## 7. Một Số Lệnh Hữu Ích Khác
 
@@ -602,7 +609,3 @@ docker save nginx:alpine | gzip > nginx-alpine.tar.gz
 # Load image từ file (dùng khi không có internet)
 docker load < nginx-alpine.tar.gz
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Viết Dockerfile chuyên nghiệp, build images tối ưu

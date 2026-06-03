@@ -1,6 +1,16 @@
+# ---
+markmap:
+    title: "Linux — systemd, Scripting & Security"
+    collapse: false
+# ---
+
 # 🐧 LINUX TOÀN TẬP - PHẦN 5: SYSTEMD, SCRIPTING, CRON & BẢO MẬT
 
----
+## Theory
+- `systemd` modernizes service management with units and timers; scripting automates ops tasks; secure practices (least privilege, safe cron, hardening) reduce incidents.
+
+## Practice
+- Write `systemd` service and timer units, use `journalctl` for logs, craft idempotent shell scripts, and schedule with systemd timers or `cron` while following secure file permissions.
 
 ## 1. Systemd - Quản Lý Services
 
@@ -153,7 +163,6 @@ sudo systemctl enable --now db-backup.timer
 systemctl list-timers          # Xem tất cả timers
 ```
 
----
 
 ## 2. Shell Scripting
 
@@ -515,7 +524,6 @@ done
 log_info "Deployment of ${APP_NAME}:${VERSION} completed successfully!"
 ```
 
----
 
 ## 3. Cron Jobs
 
@@ -582,7 +590,6 @@ cat /etc/cron.d/myapp
 # 0 2 * * * appuser /opt/myapp/scripts/cleanup.sh
 ```
 
----
 
 ## 4. Logrotate - Quản Lý Log Files
 
@@ -609,7 +616,6 @@ sudo logrotate -d /etc/logrotate.d/myapp    # Dry-run (debug)
 sudo logrotate -f /etc/logrotate.d/myapp    # Force rotate ngay
 ```
 
----
 
 ## 5. Bảo Mật Hệ Thống
 
@@ -706,7 +712,6 @@ cat >> /etc/security/limits.conf << 'EOF'
 EOF
 ```
 
----
 
 ## 6. Quick Reference - Lệnh Hay Quên
 
@@ -763,7 +768,6 @@ iostat -x 1 | grep -v "^$\|Device\|avg"
 history | awk '{print $2}' | sort | uniq -c | sort -rn | head -20
 ```
 
----
 
 ## 7. Lộ Trình Học Tiếp Theo
 

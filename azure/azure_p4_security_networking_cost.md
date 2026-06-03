@@ -1,6 +1,18 @@
+---
+markmap:
+  title: "Azure — Security, Networking Advanced & Cost"
+  collapse: false
+---
+
 # ☁️ AZURE TOÀN TẬP - PHẦN 4: SECURITY, NETWORKING ADVANCED & COST
 
----
+## Theory
+- Azure security stack: Defender for Cloud, Azure Policy, RBAC, Key Vault and network controls (NSG, Azure Firewall).
+- Cost management involves tagging, budgets, reservations and right-sizing resources.
+
+## Practice
+- Use Azure Policy to enforce guardrails; enable Defender plans for threat detection; store secrets in Key Vault with access policies.
+- Implement network segmentation using VNets, subnets, NSGs and use cost tools to monitor and forecast spend.
 
 ## 1. Azure Security Center & Defender
 
@@ -198,7 +210,6 @@ az network vnet subnet update \
   --route-table app-rt
 ```
 
----
 
 ## 2. Advanced Networking
 
@@ -333,7 +344,6 @@ Providers: Telstra, SingTel, PCCW, ...
 ExpressRoute Circuit → Exchange Provider → Azure
 ```
 
----
 
 ## 3. Cost Management
 
@@ -413,7 +423,6 @@ az consumption usage list \
   --query "[?tags.CostCenter=='Engineering'].{name:instanceName, cost:pretaxCost}"
 ```
 
----
 
 ## 4. Disaster Recovery
 
@@ -507,7 +516,3 @@ az afd origin create \
   --priority 2 \         # Lower priority = failover
   --weight 1000
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Azure Real-World Scenarios, Best Practices & Cheat Sheet

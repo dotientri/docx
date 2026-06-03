@@ -1,6 +1,18 @@
+---
+markmap:
+  title: "Ansible — Performance, Best Practices & Cheat Sheet"
+  collapse: false
+---
+
 # ⚙️ ANSIBLE TOÀN TẬP - PHẦN 5: PERFORMANCE, BEST PRACTICES & CHEAT SHEET
 
----
+## Theory
+- Tối ưu performance bằng pipelining, SSH multiplexing, fact caching và tuning forks/serial.
+- Bảo mật và testing là phần không thể tách rời của vận hành Ansible production.
+
+## Practice
+- Bật `pipelining`, `ControlPersist` và `fact_caching` cho môi trường production.
+- Sử dụng `molecule` cho unit testing roles và pipeline để lint/syntax-check.
 
 ## 1. Performance Optimization
 
@@ -120,7 +132,6 @@ ANSIBLE_CALLBACK_WHITELIST=timer,profile_tasks ansible-playbook site.yml
 ansible-playbook site.yml -v 2>&1 | grep -E "TASK|PLAY|ok:|changed:|failed:|seconds"
 ```
 
----
 
 ## 2. Security Best Practices
 
@@ -197,7 +208,6 @@ log_path = /var/log/ansible.log
     db_password: "{{ db_secrets.secret.password }}"
 ```
 
----
 
 ## 3. Debugging & Troubleshooting
 
@@ -297,7 +307,6 @@ ansible-inventory --host hostname
 # Hoặc: ansible-playbook site.yml -T 60
 ```
 
----
 
 ## 4. Ansible Best Practices Tổng Hợp
 
@@ -396,7 +405,6 @@ ansible-playbook tests/integration.yml -i inventory/staging
 ansible-playbook site.yml -i inventory/production
 ```
 
----
 
 ## 5. Cheat Sheet Tổng Hợp
 
@@ -526,7 +534,6 @@ ansible-playbook site.yml --step
 - include_role: name=rolename
 ```
 
----
 
 ## 6. Ansible vs Alternatives
 
@@ -540,11 +547,10 @@ ansible-playbook site.yml --step
 | Dùng Cho | Config mgmt | Config mgmt | Config mgmt | Config mgmt | IaC |
 | Cloud Native | Tốt | OK | OK | OK | Tốt nhất |
 
-**Tóm tắt:**
+### Tóm tắt
 - **Ansible:** Cấu hình server, deployment, orchestration → Dùng cho CM
 - **Terraform:** Tạo/xóa infrastructure (VMs, networks, databases) → Dùng cho IaC
 - **Hai bộ bổ sung nhau:** Terraform tạo infrastructure, Ansible cấu hình nó
 
----
 
 > **Hoàn thành Ansible Toàn Tập!** Tiếp theo: Terraform, Kubernetes, Azure

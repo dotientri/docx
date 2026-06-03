@@ -1,304 +1,262 @@
-# 🧠 GIẢI THÍCH BẰNG LỜI - KUBERNETES TỪ A ĐẾN Z
+# ---
+markmap:
+  title: "Kubernetes — Overview"
+  collapse: false
+# ---
 
----
+# 🧠 KUBERNETES TỪ A ĐẾN Z - GIẢI THÍCH BẰNG LỜI
 
-## 1. Kubernetes ra đời để giải quyết vấn đề gì?
+## Theory
+- Kubernetes is a container orchestration system that provides a declarative control plane (API server, etcd, scheduler, controllers) and worker nodes running kubelet/kube-proxy to manage pods, services, storage, and networking at scale.
 
-**Scenario:** Công ty có 50 microservices. Mỗi service cần:
-- Deploy lên nhiều servers (để HA)
-- Auto-restart khi crash
-- Scale up khi traffic tăng, scale down khi traffic giảm
-- Rolling updates (không downtime)
-- Service discovery (service A biết địa chỉ của service B)
-- Load balancing
-- Health monitoring
+## Practice
+- Start with `minikube`, `kind`, or `k3s` for local clusters; use `kubectl` to inspect the control plane, pods, services, and logs. Validate cluster health with `kubectl get nodes,pods,svc -A` and backup `etcd` regularly.
 
-Làm thủ công với shell scripts và cron jobs = nightmare. Sai sót, không consistent.
+## 1. Kubernetes Ra Đời Để Giải Quyết Gì?
 
-**Kubernetes** = hệ thống tự động hóa việc deploy, scale, và operate containerized applications. Tự làm tất cả những điều trên.
+### 1.1 Bài Toán Thực Tế
+- 50 microservices, mỗi cái cần: HA, auto-restart, scale, rolling updates, service discovery, LB, health monitoring
+- Làm thủ công với shell scripts = **nightmare**
 
-**"Container Orchestration"** - orchestrate = điều phối, giống nhạc trưởng điều phối dàn nhạc.
+### 1.2 K8s Giải Quyết
+- Tự động hóa **deploy, scale, operate** containerized apps
+- **Container Orchestration** = nhạc trưởng điều phối dàn nhạc
 
----
+## 2. Tại Sao K8s Phức Tạp?
 
-## 2. Tại sao K8s lại phức tạp vậy?
+### 2.1 Bài Toán Distributed Systems
+- Hàng nghìn containers trên hàng chục/trăm servers
+- Server nào còn capacity?
+- Container crash → restart ở đâu?
+- Container A biết container B đang ở đâu (IP thay đổi)?
+- Secrets (passwords) inject vào containers thế nào?
 
-K8s giải quyết bài toán thực sự phức tạp: **Distributed systems**.
+### 2.2 Kết Luận
+- Mỗi vấn đề có thể viết cả quyển sách
+- K8s giải quyết **tất cả** → phức tạp là tất nhiên
 
-Khi bạn có hàng nghìn containers chạy trên hàng chục/trăm servers:
-- Server nào đang còn capacity để chạy container mới?
-- Container trên server X crash → tự restart ở đâu?
-- Khi deploy version mới, làm sao update từng container mà không gây downtime?
-- Container A cần biết container B đang chạy ở đâu (IP, port), nhưng B có thể di chuyển giữa servers?
-- Secrets (passwords, API keys) cần inject vào containers mà không expose trong code?
+## 3. Control Plane - "Não" Của Kubernetes
 
-Mỗi vấn đề trên có thể viết cả quyển sách. K8s giải quyết tất cả, nên phức tạp là tất nhiên.
+### 3.1 kube-apiserver - Cổng Vào Duy Nhất
+- **Mọi thứ** trong K8s đều qua API server
+- `kubectl` gọi REST API → apiserver
+- Node kubelet báo cáo → apiserver
+- **Single source of truth** về cluster state
+- Validate requests (schema đúng? permission đúng?) → persist vào etcd
 
----
+### 3.2 etcd - Database Của K8s
+- **Distributed key-value store**
+- Lưu toàn bộ cluster state: pods, configs, secrets, services
+- Deploy 3 hoặc 5 nodes (quorum-based)
+- etcd down = không thể tạo/xóa pods (pods đang chạy vẫn OK nhưng không quản lý được)
 
-## 3. Control Plane - "Não" của Kubernetes
+### 3.3 kube-scheduler - "Người Tuyển Dụng"
+- Pod mới cần chạy → scheduler quyết định node nào
 
-Control plane không chạy apps của bạn - nó **quản lý** cluster, quyết định điều gì xảy ra và điều phối workers.
+#### Xem Xét Gì?
+- **Resource requests**: Pod cần 2 CPU, 4GB RAM
+- **Node selector/Affinity**: "Chỉ chạy trên nodes zone=us-east-1a"
+- **Taints/Tolerations**: "Node chỉ dành cho GPU workloads"
+- **Anti-affinity**: "Không đặt 2 replicas cùng app trên 1 node"
+- **Actual resources**: Node có đủ allocatable?
 
-**kube-apiserver - Cổng vào duy nhất:**
+### 3.4 kube-controller-manager - Vòng Lặp Điều Hòa
+- Trái tim của K8s automation
+- Nhiều controllers, mỗi cái: **actual state → desired state**
 
-Mọi thứ trong K8s đều thông qua API server. `kubectl get pods` → kubectl gọi REST API của apiserver. Node kubelet báo cáo status → gọi apiserver. Controller cập nhật state → gọi apiserver.
+#### Deployment Controller
+- "Desired: 3 replicas app-v2. Actual: 2 v1 + 1 v2" → tạo v2, xóa v1
 
-API server là "single source of truth" về cluster state. Nó validate mọi request (schema đúng không? user có permission không?), rồi persist vào etcd.
+#### Node Controller
+- Node không heartbeat 40s → "NotReady"
+- Sau 5 phút → evict pods, reschedule nơi khác
 
-**etcd - "Database" của K8s:**
+#### ReplicaSet Controller
+- Đảm bảo số pods = replicas spec
 
-etcd = distributed key-value store, lưu toàn bộ cluster state. Có bao nhiêu pods, config của mỗi pod, secrets, service definitions...
+## 4. Worker Nodes - "Tay Chân" Của K8s
 
-Tại sao distributed? Nếu etcd có 1 node, nó down = toàn bộ control plane down = không thể tạo/xóa pods (pods đang chạy vẫn chạy nhưng không thể quản lý). Thường deploy 3 hoặc 5 etcd nodes (quorum-based).
+### 4.1 kubelet - Agent Trên Mỗi Node
+1. Watch API server: "Có Pod assign cho node này?"
+2. Có → gọi container runtime start containers
+3. Monitor: healthy? unhealthy?
+4. Report status về API server
+5. Chạy probes (liveness, readiness, startup)
 
-**kube-scheduler - "Người tuyển dụng":**
+### 4.2 kube-proxy - Routing Rules
+- Quản lý iptables/IPVS rules
+- ClusterIP `10.96.100.50:80` → forward đến pod IPs
+- Pod restart IP mới → Endpoints update → kube-proxy update rules → traffic tự động đúng
 
-Khi có Pod mới cần chạy (chưa có nodeName), scheduler quyết định node nào "hire" Pod đó.
-
-Scheduler xem xét:
-- **Resource requests:** Pod cần 2 CPU, 4GB RAM → node phải có ít nhất đó
-- **Node selector/Affinity:** "Pod này chỉ chạy trên nodes có label `zone=us-east-1a`"
-- **Taints/Tolerations:** "Node này chỉ dành cho GPU workloads, pods thường không được schedule"
-- **Anti-affinity:** "Không đặt 2 replicas của cùng 1 app trên cùng 1 node (để HA)"
-- **Actual availability:** Node có đủ allocatable resources không?
-
-**kube-controller-manager - Tập hợp các "vòng lặp điều hòa":**
-
-Đây là trái tim của K8s automation. Gồm nhiều controllers, mỗi cái watch một loại resource và đảm bảo "actual state = desired state".
-
-*Deployment Controller:* "Desired state: 3 replicas app-v2. Actual: 2 replicas app-v1, 1 replica app-v2." → Tạo thêm 1 replica app-v2, xóa 1 replica app-v1. Lặp lại cho đến khi match.
-
-*Node Controller:* Watch nodes. Node không heartbeat trong 40s? Mark as "NotReady". Sau 5 phút? Evict tất cả pods trên node đó, reschedule ở nơi khác.
-
-*ReplicaSet Controller:* Đảm bảo số pods đúng với replicas spec.
-
----
-
-## 4. Worker Nodes - "Tay chân" của K8s
-
-**kubelet - Agent trên mỗi node:**
-
-kubelet chạy trên mỗi worker node, là cầu nối giữa API server và container runtime.
-
-kubelet liên tục:
-1. Watch API server: "Có Pod nào được assign cho node này không?"
-2. Nếu có: gọi container runtime (containerd) để start containers
-3. Monitor containers: healthy? unhealthy?
-4. Report status về API server: Pod running, container restart count, resource usage
-
-kubelet cũng chạy probes (liveness, readiness, startup) và act accordingly.
-
-**kube-proxy - "Bảng định tuyến" của Services:**
-
-kube-proxy chạy trên mỗi node, quản lý network rules (iptables hoặc IPVS) để implement Services.
-
-Khi bạn tạo Service với ClusterIP `10.96.100.50:80`, kube-proxy tạo iptables rules trên mỗi node: "Packet đến `10.96.100.50:80` → forward đến một trong các pods `10.244.1.5:3000` hoặc `10.244.2.7:3000`".
-
-Khi Pod restart với IP mới, Endpoints object update → kube-proxy update iptables rules → traffic tự động đến Pod mới.
-
-**Container Runtime - "Người thực sự chạy container":**
-
-containerd (hoặc CRI-O) là container runtime, được kubelet gọi để:
-- Pull images từ registry
-- Create/start/stop containers
-- Manage container storage (overlayfs layers)
+### 4.3 Container Runtime
+- **containerd** hoặc CRI-O
+- Pull images, create/start/stop containers
 - Network setup (gọi CNI plugin)
 
----
+## 5. Pod - Tại Sao Không Deploy Container Trực Tiếp?
 
-## 5. Pod - Tại sao không deploy Container trực tiếp?
+### 5.1 Pod = Wrapper Quanh Containers
 
-**Pod** = wrapper xung quanh 1 hoặc nhiều containers, với shared storage và network namespace.
+### 5.2 Shared Network Namespace
+- Containers trong cùng Pod chia sẻ **1 IP + localhost**
+- Container A và B communicate qua `localhost:port`
+- **Sidecar pattern**: App + logging sidecar → cần chung filesystem + network
 
-**Tại sao cần Pod thay vì deploy container thẳng?**
+### 5.3 Shared Storage
+- Volumes mount ở Pod level → tất cả containers access chung
 
-*Shared network namespace:* Các containers trong cùng Pod chia sẻ 1 IP address và localhost. Container A và B trong cùng Pod có thể communicate qua `localhost:port` mà không cần Service.
+### 5.4 Atomic Scheduling
+- Tất cả containers trong Pod → deploy lên **cùng 1 node**
 
-Useful cho **sidecar pattern**: App container + logging sidecar container, sidecar read log files và forward đến log aggregator. Chúng cần filesystem access chung và network access dễ dàng.
+### 5.5 Pod Là Ephemeral
+- Pod die → **chết luôn**, không tự reschedule
+- Phải dùng **Deployment/StatefulSet** để đảm bảo số pods
 
-*Shared storage:* Volumes được mount ở Pod level, tất cả containers trong Pod có thể access cùng volumes.
+## 6. Deployment - Tại Sao Quan Trọng Nhất?
 
-*Atomic scheduling:* Scheduler deploy cả Pod (tất cả containers) lên cùng 1 node. Đảm bảo sidecar container luôn cùng node với main container.
+### 6.1 Deployment → ReplicaSet → Pod
+- **Deployment** = spec mô tả app (image, replicas, resources)
+- Deployment tạo **ReplicaSet** → ReplicaSet tạo **Pods**
 
-**Pod là ephemeral (tạm thời):**
+### 6.2 Tại Sao 2 Layer?
+1. Update image → Deployment tạo **ReplicaSet MỚI**
+2. Tăng dần replicas mới, giảm dần replicas cũ
+3. **Rolling update**: zero-downtime
+4. Rollback = scale lại ReplicaSet cũ → **instant rollback**
 
-Pod không tự heal. Nếu Pod die, nó chết luôn - không được reschedule. Đó là lý do không ai tạo Pod trực tiếp - thay vào đó dùng Deployment hoặc StatefulSet, chúng mới có trách nhiệm đảm bảo số pods đúng.
+### 6.3 Deployment vs StatefulSet
+#### Deployment (Stateless)
+- Pods giống nhau (interchangeable)
+- Tên random: `api-7f9d8c-xyz`
+- Thứ tự không quan trọng
 
----
+#### StatefulSet (Stateful)
+- Tên dự đoán: `postgres-0`, `postgres-1`
+- Tạo/xóa **theo thứ tự** (0→1→2)
+- Mỗi Pod có PersistentVolume riêng
 
-## 6. Deployment - Tại sao quan trọng nhất?
+## 7. Service - Tại Sao Không Dùng Pod IP?
 
-**Deployment** = "Spec" mô tả app bạn muốn chạy: image, replicas, resources, env vars...
+### 7.1 Vấn Đề
+- Pod restart → IP **thay đổi** → hardcode IP = fail
 
-Deployment tạo ReplicaSet → ReplicaSet tạo Pods.
+### 7.2 Service Giải Quyết
+- **Stable virtual IP** (ClusterIP) không bao giờ thay đổi
+- Dùng **label selector** để tìm pods
+- Pod restart, vẫn có label → Service tự update backend
 
-**Tại sao có 2 layer Deployment → ReplicaSet → Pod?**
+### 7.3 Endpoints Object
+- K8s auto maintain danh sách pod IPs cho mỗi Service
+- Pod tạo/xóa → Endpoints update → kube-proxy update routing
 
-Khi bạn update Deployment (đổi image version):
-1. Deployment tạo ReplicaSet MỚI với image mới
-2. Tăng dần replicas của ReplicaSet mới
-3. Giảm dần replicas của ReplicaSet cũ
-4. Rolling update: zero-downtime
+## 8. Ingress - Tại Sao Không Dùng LoadBalancer?
 
-Nếu cần rollback, Deployment chỉ cần scale lại ReplicaSet cũ (vẫn còn đó, chỉ có 0 replicas) → instant rollback.
+### 8.1 Vấn Đề LoadBalancer Service
+- Mỗi `type: LoadBalancer` = 1 external LB = 1 external IP
+- 10 microservices = 10 LBs = **tốn tiền, khó quản lý**
 
-**Deployment vs StatefulSet:**
+### 8.2 Ingress Giải Quyết
+- **1 Ingress Controller** + **1 external IP**
+- Routing rules phân traffic:
+  - `api.company.com/users` → users-service
+  - `api.company.com/orders` → orders-service
+- **TLS termination** tập trung
 
-*Deployment* = stateless apps. Pods giống nhau hoàn toàn (interchangeable). Tên pods random: `api-7f9d8c-xyz`. Thứ tự tạo/xóa không quan trọng.
+### 8.3 Ingress Controller vs Ingress Object
+#### Ingress Controller
+- Phần mềm thực sự chạy (Nginx pod, Traefik pod)
 
-*StatefulSet* = stateful apps (databases, Kafka, ZooKeeper). Pods có tên dự đoán được: `postgres-0`, `postgres-1`, `postgres-2`. Tạo và xóa theo thứ tự (0→1→2 khi scale up, 2→1→0 khi scale down). Mỗi Pod có PersistentVolume riêng không bị xóa khi Pod xóa.
+#### Ingress Object
+- YAML config định nghĩa routing rules
+- **Không có Controller → Ingress object vô dụng**
 
----
+### 8.4 Trong AKS
+- **AGIC**: Dùng Azure Application Gateway
+- Hoặc Nginx Ingress Controller + LoadBalancer Service
 
-## 7. Service - Tại sao không dùng Pod IP trực tiếp?
+## 9. ConfigMap & Secret
 
-**Vấn đề:** Pod IPs thay đổi. Khi Pod restart, nó có IP mới. Nếu Service B hardcode IP của Service A's pod, sẽ fail khi pod A restart.
+### 9.1 Tại Sao Tách Config Khỏi Code?
+- Staging và production: **cùng code, khác config**
+- Secrets **không commit vào Git**
+- Thay đổi config **không rebuild image**
 
-**Service** = stable virtual IP (ClusterIP) không bao giờ thay đổi. Service dùng **label selector** để tìm pods.
+### 9.2 ConfigMap
+- Non-sensitive: database host, port, log level, feature flags
 
-```
-Service (ClusterIP: 10.96.100.50) → selector: {app: api}
-                                                    ↓
-                                  Pods với label {app: api}:
-                                  - 10.244.1.5  (node-1)
-                                  - 10.244.2.7  (node-2)
-                                  - 10.244.3.12 (node-3)
-```
+### 9.3 Secret
+- Sensitive: passwords, API keys, certificates
+- ⚠️ Mặc định chỉ **base64 encoded**, KHÔNG encrypted
 
-Khi pod restart với IP mới, nó vẫn có label `app: api` → Service tự cập nhật backend.
+### 9.4 Bảo Mật Secret Thực Sự
+- **etcd encryption at rest**: AES-256
+- **Azure Key Vault + CSI Driver**: Secrets pull từ AKV runtime
+- **Sealed Secrets**: Encrypt bằng public key, chỉ cluster controller decrypt
 
-**ClusterIP** không có nghĩa là IP của cluster - nó là "virtual IP chỉ accessible từ trong cluster." External traffic không reach được ClusterIP.
+## 10. HPA - Horizontal Pod Autoscaler
 
-**Endpoints object:** K8s tự maintain object này listing actual pod IPs cho mỗi Service. Khi Pod tạo/xóa/restart → Endpoints tự update → kube-proxy update routing rules.
+### 10.1 Vấn Đề
+- Traffic fluctuates: Black Friday 100x vs 3AM gần zero
+- Fix 10 replicas → lãng phí 90% thời gian
 
----
+### 10.2 Cách Hoạt Động
+1. Check metrics mỗi **15 giây** (mặc định)
+2. Actual CPU 80%, target 50%
+3. `ceil(3 × 80/50)` = **5 replicas**
+4. Scale deployment lên 5
 
-## 8. Ingress - Tại sao không dùng Service LoadBalancer cho mọi thứ?
+### 10.3 Scale Up vs Scale Down
+- **Scale up**: Ngay lập tức (traffic đang tăng)
+- **Scale down**: Chờ **5 phút** ổn định (tránh flapping)
 
-**LoadBalancer Service vấn đề:**
+### 10.4 VPA (Vertical Pod Autoscaler)
+- Thay vì thêm pods → điều chỉnh **resources request/limit**
+- "Thay vì 10 pods × 1CPU, dùng 5 pods × 2CPU"
+- Thường dùng **recommendation mode** (gợi ý, không tự apply)
 
-Mỗi `type: LoadBalancer` Service tạo 1 external load balancer (Azure LB, AWS ELB). Mỗi cái có external IP riêng. 10 microservices = 10 external LBs = 10 external IPs = tốn tiền, khó quản lý.
+## 11. Helm - Package Manager Cho K8s
 
-**Ingress giải quyết:**
+### 11.1 Vấn Đề Không Có Helm
+- Deploy cần nhiều YAML: Deployment, Service, ConfigMap, Ingress, HPA...
+- Mỗi environment values khác nhau → copy-paste = **error-prone**
 
-1 Ingress Controller (Nginx, Traefik, etc.) với 1 external IP. Routing rules quyết định traffic đến đâu:
-- `api.company.com/users` → users-service
-- `api.company.com/orders` → orders-service
-- `admin.company.com` → admin-service
+### 11.2 Helm Giải Quyết
+#### Chart
+- Package chứa **templates + default values**
 
-TLS termination tập trung: Decrypt HTTPS một lần ở Ingress, forward HTTP nội bộ. Certificates manage ở 1 nơi.
+#### Values
+- Mỗi environment: `values-staging.yaml`, `values-production.yaml`
 
-**Ingress Controller vs Ingress object:**
+#### Release
+- Instance deployed: `helm install myapp ./chart -f values-prod.yaml`
 
-*Ingress Controller* = phần mềm thực sự chạy (Nginx pod, Traefik pod...), watch Ingress objects và configure mình theo.
+#### Rollback
+- `helm rollback myapp 2` = rollback về version 2
 
-*Ingress object* = YAML config định nghĩa routing rules. Không có Ingress Controller thì Ingress object vô dụng.
+### 11.3 Tại Sao Helm Quan Trọng?
+- K8s ecosystem đã adopt Helm làm **standard**
+- Prometheus, Grafana, cert-manager đều có official Helm charts
 
-**Trong AKS:** Azure cung cấp AGIC (Application Gateway Ingress Controller) - dùng Azure Application Gateway làm Ingress. Hoặc dùng Nginx Ingress Controller với LoadBalancer Service.
+## 12. K3s vs AKS
 
----
+### 12.1 K3s - Kubernetes Nhẹ
+- Single binary ~100MB
+- Dùng SQLite thay etcd
+- Chạy tốt 1 vCPU, 512MB RAM
 
-## 9. ConfigMap và Secret - Tại sao tách cấu hình ra khỏi code?
+#### Dùng Khi
+- Edge computing, IoT, home lab, development, small production
 
-**"12-Factor App" principle:** Configuration phải tách khỏi code.
+#### Không Dùng Khi
+- Large-scale (hundreds of nodes), enterprise support
 
-**Tại sao?**
-- Staging và production cùng code nhưng khác config (database URL, API keys)
-- Secrets (passwords, API keys) không được commit vào Git
-- Thay đổi config không cần rebuild image
+### 12.2 AKS - Azure Managed K8s
+- Microsoft quản lý Control plane (miễn phí)
+- 1-click upgrade, tích hợp Azure AD/Monitor/LB
+- Bạn chỉ trả tiền **worker nodes**
 
-**ConfigMap** = non-sensitive config (database host, port, log level, feature flags).
+#### Dùng Khi
+- Production, enterprise features, Azure ecosystem
 
-**Secret** = sensitive data (passwords, API keys, certificates).
-
-**Quan trọng:** K8s Secrets mặc định chỉ được base64 encoded, KHÔNG encrypted. Ai có quyền đọc secrets trong namespace là đọc được. Base64 decode là trivial.
-
-**Để thực sự bảo mật:**
-- Enable etcd encryption at rest (data trong etcd được mã hóa bằng AES-256)
-- Dùng Azure Key Vault + CSI Driver: Secrets không lưu trong K8s etcd, pull từ AKV vào runtime
-- Sealed Secrets: Encrypt secret bằng public key, chỉ cluster controller có private key decrypt
-
----
-
-## 10. Horizontal Pod Autoscaler (HPA) - Tự động scale
-
-**Vấn đề:** Traffic fluctuates. Black Friday: 100x traffic bình thường. 3 giờ sáng: gần như zero.
-
-Nếu fix 10 replicas: Lãng phí 90% thời gian, insuffcient trong Black Friday.
-
-**HPA giải quyết:**
-
-HPA watch metrics (CPU, memory, custom metrics từ Prometheus) và tự động điều chỉnh số replicas.
-
-**Cách hoạt động:**
-
-1. HPA controller check metrics mỗi 15 giây (mặc định)
-2. So sánh actual với target: Actual CPU = 80%, target = 50%
-3. Tính desired replicas: `ceil(current_replicas × (actual/target))` = `ceil(3 × (80/50))` = 5
-4. Scale deployment lên 5 replicas
-
-**Scale down chậm hơn scale up (deliberate design):**
-
-Scale up: Ngay lập tức khi cần (traffic đang tăng → cần capacity nhanh)
-Scale down: Chờ 5 phút ổn định mới scale down (tránh "flapping" - scale up/down liên tục vì load oscillate)
-
-**VPA (Vertical Pod Autoscaler):**
-
-Thay vì thêm pods, VPA điều chỉnh resources request/limit của từng pod. "Thay vì 10 pods × 1CPU, dùng 5 pods × 2CPU."
-
-Thường dùng VPA ở recommendation mode - nó gợi ý values nhưng không tự apply (vì thay đổi resources = pod restart).
-
----
-
-## 11. Helm - Package Manager cho Kubernetes
-
-**Vấn đề khi không có Helm:**
-
-Deploy app lên K8s cần nhiều YAML files: Deployment, Service, ConfigMap, Secret, Ingress, HPA, ServiceAccount, RBAC...
-
-Mỗi environment (dev, staging, prod) cần values khác nhau. Copy-paste và sửa = error-prone, không maintainable.
-
-**Helm giải quyết:**
-
-*Chart* = package chứa templates + default values. Templates dùng Go template syntax để parameterize.
-
-*Values* = parameters override defaults. Mỗi environment có `values-staging.yaml`, `values-production.yaml`.
-
-*Release* = instance của chart deployed vào cluster. `helm install myapp ./chart -f values-prod.yaml`
-
-Helm track revision history. `helm rollback myapp 2` = rollback về version 2.
-
-**Tại sao Helm quan trọng:**
-
-Kubernetes ecosystem đã adopt Helm làm standard. Hầu hết open-source tools (prometheus, grafana, cert-manager, nginx-ingress) cung cấp official Helm charts. Thay vì tự viết YAML, bạn chỉ cần `helm install cert-manager jetstack/cert-manager`.
-
----
-
-## 12. K3s vs AKS - Khi nào dùng cái nào?
-
-**K3s** = Kubernetes nhẹ, single binary ~100MB, chạy tốt trên VM nhỏ (1 vCPU, 512MB RAM), Raspberry Pi.
-
-Tại sao nhẹ hơn K8s đầy đủ?
-- Không có etcd mặc định → dùng SQLite (lightweight) hoặc PostgreSQL/MySQL
-- Containerd thay vì Docker
-- Không có nhiều cloud-specific features
-- Loại bỏ alpha/legacy features
-
-*Dùng K3s khi:* Edge computing, IoT, home lab, development environment, small-scale production (dưới 5 nodes), CI/CD runners.
-
-*Không dùng K3s khi:* Large-scale production (hundreds of nodes), cần enterprise support, complex networking (service mesh).
-
-**AKS (Azure Kubernetes Service)** = Managed K8s trên Azure.
-
-Microsoft lo:
-- Control plane (kube-apiserver, etcd, scheduler...) - bạn không quản lý, không trả tiền
-- Upgrades (1-click upgrade K8s version)
-- Integration với Azure (Azure AD, Azure Monitor, Azure LB, Azure Disks...)
-- Node OS patches
-
-Bạn chỉ trả tiền cho worker nodes (VMs).
-
-*Dùng AKS khi:* Production workloads, cần enterprise features, team không muốn quản lý control plane, đã dùng Azure ecosystem.
-
-*Trade-off:* Less control, vendor lock-in (nếu migrate sang on-prem hoặc AWS sẽ có khác biệt).
+#### Trade-off
+- Less control, vendor lock-in

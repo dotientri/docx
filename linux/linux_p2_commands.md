@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Linux — Commands & File Handling"
+  collapse: false
+# ---
+
 # 🐧 LINUX TOÀN TẬP - PHẦN 2: LỆNH CƠ BẢN & XỬ LÝ FILE
 
----
+## Theory
+- Shell commands form the toolkit for inspecting and manipulating files, processes, and system state; mastering them reduces mean time to resolution.
+
+## Practice
+- Practice safe file operations (`cp -a`, `rm -i`), use `find` for targeted searches, `head`/`tail` for logs, and `tree` for directory overviews.
 
 ## 1. Điều Hướng (Navigation)
 
@@ -34,7 +44,6 @@ tree -a                # Kể cả hidden files
 tree --dirsfirst       # Thư mục hiện trước
 ```
 
----
 
 ## 2. Thao Tác File & Thư Mục
 
@@ -158,7 +167,6 @@ ls -la /usr/bin/python3
 readlink -f /usr/bin/python3   # Theo đến đích cuối cùng
 ```
 
----
 
 ## 3. Tìm Kiếm
 
@@ -260,7 +268,6 @@ which git               # /usr/bin/git
 whereis nginx           # nginx: /usr/sbin/nginx /etc/nginx /usr/share/nginx
 ```
 
----
 
 ## 4. Xử Lý Văn Bản (Text Processing)
 
@@ -381,7 +388,6 @@ awk '{print $9}' /var/log/nginx/access.log | sort | uniq -c
 grep "Failed password" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -rn
 ```
 
----
 
 ## 5. Pipes & Redirections - Triết Lý Unix
 
@@ -465,7 +471,6 @@ diff <(ls /dir1) <(ls /dir2)
 grep "pattern" <(cat file1.txt file2.txt)
 ```
 
----
 
 ## 6. Quản Lý File Nén
 
@@ -513,7 +518,6 @@ xz -d file.txt.xz                       # Giải nén
 tar -czvf backup-$(date +%Y%m%d).tar.gz /etc/nginx/ /etc/ssl/
 ```
 
----
 
 ## 7. Lệnh Hữu Ích Khác
 
@@ -555,7 +559,3 @@ uptime
 # Load average: 1 phút, 5 phút, 15 phút
 # Load = 1.0 trên 1 CPU core = 100% busy
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Users, Groups, Permissions, Process Management, System Monitoring

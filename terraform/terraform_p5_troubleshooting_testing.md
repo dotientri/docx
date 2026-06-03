@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terraform — Troubleshooting & Testing"
+  collapse: false
+# ---
+
 # 🏗️ TERRAFORM TOÀN TẬP - PHẦN 5: TROUBLESHOOTING, TESTING & REAL-WORLD
 
----
+## Theory
+- Troubleshooting centers on state, provider errors, and dependency cycles; testing (unit/integration) validates modules before production deployments.
+
+## Practice
+- Use `terraform plan -out`, `TF_LOG=DEBUG` for diagnostics, implement test suites (tftest/terratest), and maintain state backups/versioning for restores.
 
 ## 1. Troubleshooting Common Issues
 
@@ -188,7 +198,6 @@ terraform show -json tfplan | jq '.resource_changes[] | select(.change.actions[]
 # → Xem chỉ những gì bị xóa
 ```
 
----
 
 ## 2. Testing Terraform
 
@@ -379,7 +388,6 @@ terraform show -json tfplan > plan.json
 opa eval -d azure-policy.rego -I plan.json "data.terraform.deny"
 ```
 
----
 
 ## 3. Real-World Patterns
 
@@ -549,7 +557,6 @@ resource "azurerm_traffic_manager_azure_endpoint" "dr" {
 }
 ```
 
----
 
 ## 4. Terraform với Azure OpenID Connect (OIDC)
 
@@ -634,7 +641,6 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 ```
 
----
 
 ## 5. Cheat Sheet Cuối
 
@@ -694,6 +700,5 @@ terraform output -json
 terraform output resource_group_name
 ```
 
----
 
 > **Hoàn thành Terraform Toàn Tập!** Tiếp theo: Kubernetes (AKS) & Azure DevOps Pipeline

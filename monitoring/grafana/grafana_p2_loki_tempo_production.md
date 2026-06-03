@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Grafana Stack — Loki, Tempo & Production"
+  collapse: false
+# ---
+
 # 📈 GRAFANA TOÀN TẬP - PHẦN 2: LOKI, TEMPO & PRODUCTION
 
----
+## Theory
+- Loki aggregates logs with label-based indexing; Tempo stores distributed traces; correlating logs, metrics, and traces gives strong observability for production systems.
+
+## Practice
+- Deploy Loki+Promtail and Tempo via Helm, enable derived fields in Grafana for log-trace correlation, and design retention/compaction for cost-effective storage.
 
 ## 1. Loki - Log Aggregation
 
@@ -154,7 +164,6 @@ topk(10,
 {namespace="production"} |= "trace_id" | json | trace_id="abc123"
 ```
 
----
 
 ## 2. Grafana Tempo (Distributed Tracing)
 
@@ -222,7 +231,6 @@ jsonData:
       urlDisplayLabel: "View Trace"
 ```
 
----
 
 ## 3. Production Best Practices
 
@@ -400,6 +408,5 @@ resource "grafana_rule_group" "cpu_alerts" {
 }
 ```
 
----
 
 > **Xem thêm:** `prometheus/` cho metrics collection, `elk/` cho log search & analysis

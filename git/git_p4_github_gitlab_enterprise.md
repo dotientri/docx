@@ -1,6 +1,20 @@
+---
+markmap:
+  title: "Git — GitHub/GitLab Enterprise integrations & PR policies"
+  collapse: false
+---
+
+# GIT + GITHUB/GITLAB ENTERPRISE - TÍCH HỢP & PR POLICY
+
+## Theory
+ - PR workflows, protected branches, required reviewers and CI checks enforce code quality and audit trails in enterprise.
+
+## Practice
+ - Thực hành: thiết lập branch protection, required status checks, CODEOWNERS, and automation (Dependabot, merge queues).
+
+## 1. Pull Request Workflow
 # 🔀 GIT TOÀN TẬP - PHẦN 4: GITHUB/GITLAB, CODE REVIEW & ENTERPRISE PATTERNS
 
----
 
 ## 1. GitHub vs GitLab vs Bitbucket
 
@@ -17,7 +31,6 @@
 | Free Private Repos | ✓ (unlimited) | ✓ (unlimited) | ✓ (5 users) |
 | Phổ Biến | Ở đâu cũng có | Enterprise nhiều hơn | Atlassian ecosystem |
 
----
 
 ## 2. Pull Request / Merge Request Workflow
 
@@ -172,7 +185,6 @@ gh pr create \
   --assignee @me
 ```
 
----
 
 ## 3. Branch Protection Rules
 
@@ -230,7 +242,6 @@ docs/               @tech-writers
 *.md                @tech-writers
 ```
 
----
 
 ## 4. GitHub Actions - Nâng Cao
 
@@ -351,7 +362,6 @@ jobs:
         run: echo "Deploying to production..."
 ```
 
----
 
 ## 5. GitLab CI/CD - So Sánh Với GitHub Actions
 
@@ -483,7 +493,6 @@ trigger-pipeline:
         job: generate-pipeline
 ```
 
----
 
 ## 6. Monorepo Strategies
 
@@ -577,7 +586,6 @@ jobs:
         run: npm test
 ```
 
----
 
 ## 7. Git Security Best Practices
 
@@ -672,7 +680,3 @@ git log --all --follow -p src/payment.py
 # Tìm commit đã xóa file
 git log --all --full-history -- deleted-file.py
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Git Advanced: Internals, Performance, Troubleshooting & Real-World Scenarios

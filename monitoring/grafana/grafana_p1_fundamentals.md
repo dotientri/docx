@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Grafana — Fundamentals & Dashboards"
+  collapse: false
+# ---
+
 # 📈 GRAFANA TOÀN TẬP - PHẦN 1: CÀI ĐẶT & DASHBOARD CƠ BẢN
 
----
+## Theory
+- Grafana is a visualization platform that supports many data sources (Prometheus, Loki, Azure Monitor) and enables dashboard-as-code and alerting for observability.
+
+## Practice
+- Install via package, Docker, or Helm; provision datasources and dashboards; secure admin credentials and enable SSO (Azure AD) for team access.
 
 ## 1. Grafana Là Gì?
 
@@ -16,14 +26,13 @@ Data Sources:          Panels:
 - MySQL/Postgres────▶  Alerts
 ```
 
-**Ưu điểm:**
+### Ưu điểm
 - Hỗ trợ 50+ data sources
 - Alerting tích hợp
 - Dashboard as Code (JSON/Terraform/Grafonnet)
 - Azure Managed Grafana: fully managed, không cần self-host
 - SSO với Azure AD
 
----
 
 ## 2. Cài Đặt
 
@@ -127,7 +136,6 @@ az grafana data-source create \
   }'
 ```
 
----
 
 ## 3. Provisioning (Dashboard as Code)
 
@@ -196,7 +204,6 @@ providers:
       foldersFromFilesStructure: true
 ```
 
----
 
 ## 4. Dashboard Quan Trọng (JSON Model)
 
@@ -304,7 +311,6 @@ curl -X POST http://admin:password@grafana:3000/api/dashboards/import \
 }
 ```
 
----
 
 ## 5. Alerting trong Grafana
 
@@ -384,7 +390,6 @@ contactPoints:
           singleEmail: false
 ```
 
----
 
 ## 6. Azure Monitor Integration
 
@@ -407,7 +412,3 @@ contactPoints:
 # | summarize avg(Average) by bin(TimeGenerated, 5m), Resource
 # | render timechart
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Loki (Log Aggregation), Tempo (Tracing) & Production Best Practices

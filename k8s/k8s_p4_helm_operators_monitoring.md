@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Kubernetes — Helm, Operators, Monitoring & CI/CD"
+  collapse: false
+# ---
+
 # ☸️ KUBERNETES TOÀN TẬP - PHẦN 4: HELM, OPERATORS, MONITORING & CI/CD
 
----
+## Theory
+- Helm packages manifests into charts and releases; Operators encode application lifecycle logic; monitoring (Prometheus/Grafana) and alerting provide observability for CI/CD pipelines.
+
+## Practice
+- Use `helm` to install and manage charts, write operators or use existing ones, deploy Prometheus/Grafana with Helm, and integrate pipelines to publish metrics and alerts.
 
 ## 1. Helm - Package Manager cho K8s
 
@@ -21,7 +31,7 @@ helm install myapp ./myapp-chart
 # Một lệnh install tất cả, có version, có rollback
 ```
 
-**Helm Concepts:**
+## Helm Concepts
 - **Chart:** Package của K8s manifests (như Debian package)
 - **Release:** Instance của chart được install vào cluster
 - **Repository:** Nơi chứa charts (như apt repo)
@@ -345,7 +355,6 @@ helm upgrade --install myapp ./myapp-chart \
   --timeout 5m
 ```
 
----
 
 ## 2. Kubernetes Operators
 
@@ -478,7 +487,6 @@ spec:
 EOF
 ```
 
----
 
 ## 3. Monitoring Stack
 
@@ -612,7 +620,6 @@ spec:
             summary: "Pod {{ $labels.pod }} not ready"
 ```
 
----
 
 ## 4. CI/CD với Kubernetes
 
@@ -764,7 +771,6 @@ argocd app rollback myapp-production      # Rollback to previous
 argocd app diff myapp-production          # See what changed
 ```
 
----
 
 ## 5. Logging Stack - EFK
 
@@ -791,7 +797,3 @@ helm install fluent-bit fluent/fluent-bit \
   -n logging \
   --set config.outputs="[OUTPUT]\n    Name es\n    Match *\n    Host elasticsearch-master\n    Port 9200"
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Troubleshooting, Best Practices & Cheat Sheet

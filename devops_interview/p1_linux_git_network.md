@@ -1,10 +1,19 @@
+---
+markmap:
+    title: "DevOps Interview — Linux & Bash"
+    collapse: false
+---
+
 # 🎯 DEVOPS INTERN INTERVIEW - LINUX & BASH (CHI TIẾT ĐẦY ĐỦ)
 
----
+## Theory
+- Kernel boot flow, process model, filesystems, permissions, and basic networking are essential Linux fundamentals for SRE/DevOps roles.
+
+## Practice
+- Include step-by-step diagnostic commands, common remediation actions (disk, processes), and scripts/examples for automation and monitoring.
 
 ## PHẦN 1: CÂU HỎI LÝ THUYẾT LINUX
 
----
 
 ### Q1. Giải thích quy trình boot của Linux từ đầu đến cuối?
 
@@ -39,11 +48,10 @@ systemd (PID 1) - Init system
 Getty/Login prompt
 ```
 
-**Câu hỏi follow-up thường gặp:**
+#### Câu hỏi follow-up thường gặp
 - "Nếu server không boot được, bạn làm gì?" → Boot vào rescue mode (GRUB → `e` → thêm `rd.break`), mount filesystem và kiểm tra `/var/log/boot.log`
 - "systemd là gì?" → Init system thay thế SysVinit, quản lý services (units), parallel startup
 
----
 
 ### Q2. File permissions trong Linux - giải thích chi tiết?
 
@@ -67,7 +75,7 @@ Ví dụ:
   rwx------ = 700 → Owner: 7(rwx), Group: 0(---), Others: 0(---)
 ```
 
-**Các lệnh thực tế:**
+#### Các lệnh thực tế
 ```bash
 # Thay đổi permissions
 chmod 755 script.sh           # Octal
@@ -88,12 +96,11 @@ stat file.txt             # Xem inode, permissions, timestamps
 getfacl file.txt          # ACL (Access Control List) chi tiết hơn
 ```
 
-**Trả lời khi được hỏi "Sự khác nhau giữa 777 và 755":**
+## Trả lời khi được hỏi "Sự khác nhau giữa 777 và 755"
 - `777`: Everyone có full quyền (read/write/execute) - **nguy hiểm**, thường chỉ dùng cho thư mục tmp tạm thời
 - `755`: Owner toàn quyền, Group và Others chỉ read và execute - chuẩn cho scripts và thư mục web
 - `644`: Owner read/write, Group và Others chỉ read - chuẩn cho config files
 
----
 
 ### Q3. Processes trong Linux?
 
@@ -140,7 +147,6 @@ lsof /var/log/nginx/access.log   # Ai đang mở file này?
 cat /proc/PID/cmdline | tr '\0' ' '
 ```
 
----
 
 ### Q4. Disk và Memory?
 
@@ -176,7 +182,7 @@ ps aux --sort=-%mem | head -10
 cat /proc/PID/status | grep VmRSS   # RAM của specific process
 ```
 
-**Câu hỏi hay gặp: "Server hết disk, bạn làm gì?"**
+## Câu hỏi hay gặp: "Server hết disk, bạn làm gì?"
 ```bash
 # Step 1: Xác định vị trí
 df -h               # Filesystem nào đầy?
@@ -204,7 +210,6 @@ docker system prune -a --volumes   # Xóa unused images, containers, volumes
 # Cấu hình logrotate, monitoring disk usage
 ```
 
----
 
 ### Q5. Networking trên Linux?
 
@@ -252,7 +257,6 @@ iperf3 -s               # Server mode
 iperf3 -c server-ip     # Client mode
 ```
 
----
 
 ### Q6. Systemd & Services?
 
@@ -313,11 +317,10 @@ systemctl daemon-reload
 systemctl enable --now myapp
 ```
 
----
 
 ### Q7. Bash Scripting?
 
-**Script kiểm tra service và alert - được hỏi rất nhiều:**
+#### Script kiểm tra service và alert - được hỏi rất nhiều
 ```bash
 #!/usr/bin/env bash
 # Script template chuyên nghiệp
@@ -453,7 +456,6 @@ main() {
 main "$@"
 ```
 
----
 
 ### Q8. Các lệnh quan trọng cần thuộc lòng?
 
@@ -516,11 +518,9 @@ Host prod-api
     IdentityFile ~/.ssh/id_ed25519
 ```
 
----
 
 ## PHẦN 2: TÌNH HUỐNG THỰC TẾ (Scenario Questions)
 
----
 
 ### Tình huống 1: "Website đang chậm, bạn debug như thế nào?"
 

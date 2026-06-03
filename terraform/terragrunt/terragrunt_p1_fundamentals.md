@@ -1,6 +1,5 @@
 # 🌿 TERRAGRUNT TOÀN TẬP - PHẦN 1: NỀN TẢNG & CẤU TRÚC
 
----
 
 ## 1. Terragrunt Là Gì?
 
@@ -24,7 +23,7 @@ environments/
 Khi cần update provider version → sửa ở TẤT CẢ thư mục!
 ```
 
-**Terragrunt giải quyết:**
+#### Terragrunt giải quyết
 - **DRY (Don't Repeat Yourself)**: Cấu hình 1 lần, dùng nhiều nơi
 - **Remote state management**: Tự động tạo/quản lý backend
 - **Dependencies**: Quản lý phụ thuộc giữa các module
@@ -42,7 +41,6 @@ Khi cần update provider version → sửa ở TẤT CẢ thư mục!
 | Hooks | Không | before/after hooks |
 | Azure Integration | Có | Có (qua Terraform) |
 
----
 
 ## 2. Cài Đặt
 
@@ -112,7 +110,6 @@ infrastructure/
             └── terragrunt.hcl
 ```
 
----
 
 ## 3. Cú Pháp Terragrunt
 
@@ -315,7 +312,6 @@ inputs = {
 }
 ```
 
----
 
 ## 4. Dependencies Giữa Modules
 
@@ -400,7 +396,6 @@ terragrunt graph-dependencies
 terragrunt graph-dependencies | dot -Tpng > dependency-graph.png
 ```
 
----
 
 ## 5. Run-All Commands
 
@@ -469,7 +464,6 @@ terragrunt state list
 terragrunt state show azurerm_virtual_network.main
 ```
 
----
 
 ## 6. Quản Lý Azure State Backend
 
@@ -606,7 +600,6 @@ EOF
 echo "Lưu file .env.${ENVIRONMENT} vào Azure Key Vault hoặc CI/CD secrets!"
 ```
 
----
 
 ## 7. Terragrunt với CI/CD (Azure DevOps)
 
@@ -721,7 +714,3 @@ stages:
                     ARM_TENANT_ID: $(ARM_TENANT_ID)
                     ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID_PROD)
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Terragrunt Modules, Azure Infrastructure hoàn chỉnh & Best Practices

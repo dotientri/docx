@@ -1,6 +1,20 @@
+---
+markmap:
+     title: "Git — Fundamentals"
+     collapse: false
+---
+
+# GIT TOÀN TẬP - PHẦN 1: CƠ BẢN
+
+## Theory
+- Git là hệ thống version control phân tán; commit là snapshot, branch là pointer, merge vs rebase có trade-offs.
+
+## Practice
+- Thực hành: tạo branch, commit theo convention, push/pull, giải quyết conflict, sử dụng tag và hooks để tự động hoá.
+
+## 1. Git Là Gì?
 # 🔀 GIT TOÀN TẬP - PHẦN 1: NỀN TẢNG & KIẾN TRÚC
 
----
 
 ## 1. Git Là Gì? Tại Sao Phải Dùng Git?
 
@@ -16,7 +30,7 @@ Git được **Linus Torvalds** tạo ra năm **2005** — cùng người tạo 
 
 **Version Control System (VCS)** là hệ thống theo dõi thay đổi trong codebase theo thời gian.
 
-**Không có VCS:**
+#### Không có VCS
 ```
 project_v1.zip
 project_v1_final.zip
@@ -26,7 +40,7 @@ project_v2_backup_before_deploy.zip
 ```
 → Chaos, không biết ai thay đổi gì, khi nào, tại sao
 
-**Với Git:**
+#### Với Git
 ```
 commit a1b2c3d - Add user authentication (Alice, 2024-01-15)
 commit b2c3d4e - Fix login bug on mobile (Bob, 2024-01-16)
@@ -44,7 +58,6 @@ commit c3d4e5f - Deploy hotfix for SQL injection (Alice, 2024-01-17)
 
 **Git là Distributed:** Mỗi developer có full copy của toàn bộ repository history → Không cần mạng để làm việc, không có single point of failure.
 
----
 
 ## 2. Kiến Trúc Nội Bộ Git
 
@@ -107,7 +120,7 @@ echo -n "Hello World" | git hash-object --stdin
 # - Nếu 1 byte thay đổi → hash hoàn toàn khác → 2 object riêng
 ```
 
-**Ý nghĩa quan trọng:**
+## Ý nghĩa quan trọng
 - Git **tự động deduplicate** files giống nhau (tiết kiệm disk)
 - Không thể thay đổi lịch sử mà không thay đổi hash (integrity đảm bảo)
 - Distributed safe: mọi người verify được tính toàn vẹn
@@ -183,7 +196,6 @@ echo "More changes" >> feature.txt
 # Repository: vẫn là bản đã commit
 ```
 
----
 
 ## 3. Cài Đặt & Cấu Hình Git
 
@@ -353,7 +365,6 @@ EOF
 git config --global core.excludesfile ~/.gitignore_global
 ```
 
----
 
 ## 4. Luồng Làm Việc Cơ Bản
 
@@ -537,7 +548,6 @@ Closes #234
 Breaking-Change: Token format changed from v1 to v2"
 ```
 
----
 
 ## 5. Hiểu Về Branches
 
@@ -621,7 +631,6 @@ git branch -M main                   # Rename thành main (force)
 git branch -u origin/develop develop  # Set upstream
 ```
 
----
 
 ## 6. Branching Strategy Trong Doanh Nghiệp
 
@@ -654,7 +663,7 @@ main ─────────────────────────
 feature/X ─────────   feature/Y ───────
 ```
 
-**Quy tắc:**
+#### Quy tắc
 1. Mọi thứ trên `main` deploy được
 2. Tạo branch từ main để làm việc
 3. Commit thường xuyên, push lên remote
@@ -674,7 +683,3 @@ main (trunk) ──────────────────────�
 - Dùng **Feature Flags** để ẩn tính năng chưa xong
 - Yêu cầu CI/CD rất mạnh
 - Giảm merge conflict tối đa
-
----
-
-> **Tiếp theo: Phần 2** - Remote Repositories, Merging, Rebasing & Conflict Resolution
