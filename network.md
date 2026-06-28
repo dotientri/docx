@@ -27,13 +27,14 @@
     - Sử dụng địa chỉ vật lý (MAC Address) do nhà sản xuất gán cứng để giao tiếp tới trạm kế tiếp. 
     - Cung cấp cơ chế phát hiện lỗi (FCS). Là nơi hoạt động của Switch.
   - **Lớp 3 - Network (Mạng):** Phân mảnh và đóng gói thành Packet. 
-    - Cung cấp địa chỉ logic (IP) và tìm đường (Routing) từ điểm đầu đến điểm cuối. Là nơi hoạt động của Router.
+    - Cung cấp địa chỉ logic (IP) và tìm đường (Routing) từ điểm đầu đến điểm cuối. 
+    - Là nơi hoạt động của Router.
   - **Lớp 4 - Transport (Giao vận):** Đóng gói thành Segment(ĐOẠN DỮ LIỆU). Thiết lập kết nối bằng cách sử dụng Cổng (Port) để phân biệt các ứng dụng. Có 2 giao tLIỆUcốt lõi:
     - **TCP (Transmission Control Protocol - Chậm mà chắc):** Giao thức hướng kết nối, đảm bảo dữ liệu đến nơi trọn vẹn, đúng thứ tự, không bị mất mát.
       - **Cơ chế Bắt tay 3 bước (3-way Handshake):** Quá trình "chào hỏi" bắt buộc trước khi gửi dữ liệu.
       - *Bước 1 (SYN - Synchronize):* Máy A gửi gói `SYN` (Hỏi: "Alo B, mày rảnh nhận dữ liệu không?").
-      - *Bước 2 (SYN-ACK):* Máy B trả lời bằng gói `SYN-ACK` ("Tao rảnh, nghe rõ. Mày nghe rõ tao không?").
-      - *Bước 3 (ACK - Acknowledge):* Máy A xác nhận bằng gói `ACK` ("Nghe rõ, chuẩn bị gửi dữ liệu đây!"). Mở ra đường truyền an toàn.
+      - *Bước 2 (SYN-ACK):* Máy B trả lời bằng gói `SYN-ACK`-> Server phản hồi lại yêu cầu kết nối từ máy khách (Client). Ở bước này, Server thực hiện đồng thời hai hành động: gửi cờ SYN để yêu cầu kết nối ngược lại và cờ ACK để xác nhận đã nhận được gói tin .
+      - *Bước 3 (ACK - Acknowledge):* Máy A xác nhận (gui lai goi tin phan hoi ) bằng gói `ACK` ("Client xác nhận với Server rằng hai bên đã đồng bộ số thứ tự thành công và sẵn sàng truyền tải dữ liệu thực tế"). Mở ra đường truyền an toàn.
     - **UDP (User Datagram Protocol - Nhanh mà ẩu):** Giao thức không hướng kết nối (Connectionless).
       - Không có cơ chế bắt tay, cứ thế "bắn" dữ liệu đi càng nhanh càng tốt.
       - Không kiểm tra lỗi mất mát, không gửi lại (Phù hợp cho Game Online, Livestream, Call Video).
