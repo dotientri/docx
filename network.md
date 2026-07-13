@@ -68,14 +68,34 @@
 
 ## Ngày 23: Các giao thức mạng tiêu chuẩn & Mạng con
 - **Các Giao thức Tiêu chuẩn (Internet Standards)**
-  - **ARP (Address Resolution Protocol):** Phân giải địa chỉ IP (Lớp 3) sang địa chỉ MAC (Lớp 2) để Frame có thể được gửi đi trên đường truyền vật lý.
-  - **DNS (Domain Name System):** Hệ thống phân giải tên miền (như `vntechies.dev`) thành địa chỉ IP (như `104.21.x.x`) để máy tính hiểu được.
-  - **DHCP (Dynamic Host Configuration Protocol):** Tự động cấp phát 4 thông số mạng thiết yếu cho thiết bị truy cập: Địa chỉ IP, Subnet Mask, Default Gateway, và DNS Server.
+  - **ARP (Address Resolution Protocol):** Là cầu nối giữa Lớp 2 và Lớp 3. Khi một máy tính (A) muốn gửi dữ liệu cho máy tính khác (B) trong cùng mạng LAN, nó biết địa chỉ IP của B nhưng cần địa chỉ MAC để tạo Frame.
+    - **Quy trình hoạt động:**
+      1.  Máy A kiểm tra bảng ARP cache của mình xem đã có địa chỉ MAC của B chưa.
+      2.  Nếu chưa, A gửi một gói tin **ARP Request** quảng bá (broadcast) ra toàn mạng: "Ai có IP `192.168.1.10`? Hãy cho tôi biết địa chỉ MAC của bạn."
+      3.  Tất cả các máy trong mạng đều nhận được, nhưng chỉ có máy B (có IP `192.168.1.10`) trả lời bằng một gói tin **ARP Reply** trực tiếp cho A: "Tôi đây, MAC của tôi là `AA:BB:CC:11:22:33`."
+      4.  Máy A nhận được và lưu thông tin này vào ARP cache để dùng cho các lần sau.
+  - **DNS (Domain Name System):** Là "danh bạ của Internet", giúp con người dùng tên miền dễ nhớ thay vì phải nhớ địa chỉ IP phức tạp.
+    - **Luồng phân giải DNS (Recursive Query):**
+      1.  **Trình duyệt/OS Cache:** Máy tính kiểm tra cache cục bộ trước tiên.
+      2.  **Recursive Resolver (VD: `8.8.8.8`):** Nếu không có trong cache, máy tính hỏi DNS của nhà mạng hoặc DNS công cộng.
+      3.  **Root Server (`.`):** Resolver hỏi Root Server: "Ai quản lý tên miền `.dev`?".
+      4.  **TLD Server (`.dev`):** Root Server chỉ đường đến TLD Server. Resolver tiếp tục hỏi: "Ai quản lý tên miền `vntechies.dev`?".
+      5.  **Authoritative Server:** TLD Server chỉ đường đến máy chủ DNS có thẩm quyền của `vntechies.dev`. Máy chủ này sẽ trả về địa chỉ IP chính xác.
+      6.  Resolver nhận được IP, trả về cho máy tính của bạn và lưu vào cache trong một khoảng thời gian (gọi là **TTL - Time To Live**).
+  - **DHCP (Dynamic Host Configuration Protocol):** Giải quyết bài toán cấp phát IP thủ công tốn thời gian và dễ lỗi.
+    - **Quy trình 4 bước (DORA):**
+      1.  **Discover:** Thiết bị mới kết nối vào mạng và gửi quảng bá một gói tin "DHCP Discover": "Có máy chủ DHCP nào ở đây không? Tôi cần một địa chỉ IP."
+      2.  **Offer:** Máy chủ DHCP nhận được và trả lời bằng một gói "DHCP Offer": "Tôi có thể cấp cho bạn IP `192.168.1.100`, Subnet Mask `255.255.255.0`, Gateway `192.168.1.1`..."
+      3.  **Request:** Thiết bị chấp nhận lời đề nghị và gửi lại một gói "DHCP Request": "Tôi đồng ý nhận cấu hình IP mà bạn đã đề nghị."
+      4.  **Acknowledge (ACK):** Máy chủ DHCP xác nhận lần cuối: "Ok, cấu hình đó chính thức là của bạn trong một khoảng thời gian nhất định (lease time)."
 - **Mạng con (Subnetting)**
   - Quá trình chia một dải địa chỉ IP lớn thành nhiều mạng logic nhỏ hơn.
-  - **Lợi ích thực tiễn:** - Tối ưu và tiết kiệm địa chỉ IP.
+    - **Ví dụ:** Dải `10.0.0.0/16` (hơn 65,000 IP) có thể được chia thành các dải `/24` (mỗi dải 254 IP) cho từng phòng ban.
+  - **Lợi ích thực tiễn:**
+    - **Tối ưu và tiết kiệm địa chỉ IP:** Cấp phát dải IP vừa đủ cho nhu cầu, tránh lãng phí.
     - Giảm kích thước miền quảng bá (Broadcast domain) giúp giảm tắc nghẽn mạng.
     - Tăng cường bảo mật bằng cách cô lập các phòng ban/khu vực mạng, dễ dàng chặn các luồng dữ liệu bất thường.
+    - **Tăng cường bảo mật:** Cô lập các mạng với nhau. Ví dụ, mạng của server Database (`10.0.1.0/24`) có thể được cấu hình tường lửa để chỉ cho phép truy cập từ mạng của server Ứng dụng (`10.0.2.0/24`), chặn toàn bộ truy cập từ các mạng khác.
 
 ## Ngày 24: Tự động hóa thiết lập mạng
 - **Mục tiêu của Tự động hóa mạng**
