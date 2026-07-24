@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terraform — Fundamentals"
+  collapse: false
+# ---
+
 # 🏗️ TERRAFORM TOÀN TẬP - PHẦN 1: NỀN TẢNG & KIẾN TRÚC
 
----
+## Theory
+- Terraform is an IaC tool using HCL to declaratively manage infrastructure across clouds; understand providers, state, plan/apply workflow, and modules.
+
+## Practice
+- Install via package manager or `tfenv`, pin Terraform versions, use remote backends for state, and validate with `terraform validate` and `terraform plan` before apply.
 
 ## 1. Terraform Là Gì?
 
@@ -8,7 +18,7 @@
 
 **IaC** = Quản lý và cung cấp infrastructure thông qua code thay vì quy trình thủ công.
 
-**Trước IaC:**
+#### Trước IaC
 ```
 1. Vào Azure Portal (click, click, click)
 2. Tạo Resource Group... cấu hình VNet...
@@ -21,7 +31,7 @@ Tuần sau: Dựng môi trường staging → Làm lại từ đầu!
 Khi có lỗi: Không biết config khác ở đâu!
 ```
 
-**Với Terraform:**
+#### Với Terraform
 ```hcl
 # main.tf - Mô tả infrastructure bằng code
 resource "azurerm_resource_group" "main" {
@@ -54,14 +64,13 @@ terraform workspace new staging && terraform apply
 | Community | Rất lớn | Lớn | Lớn | Nhỏ hơn |
 | Import existing | ✅ | Khó | ✅ | ✅ |
 
-**Terraform nổi bật vì:**
+#### Terraform nổi bật vì
 - **Multi-cloud:** 1 tool cho Azure, AWS, GCP, Kubernetes, GitHub, Cloudflare...
 - **Declarative:** Mô tả trạng thái cuối, không phải các bước
 - **Plan trước:** `terraform plan` xem những gì sẽ thay đổi trước khi apply
 - **State:** Track trạng thái thực tế của infrastructure
 - **Modules:** Package và tái sử dụng patterns
 
----
 
 ## 2. Kiến Trúc Terraform
 
@@ -87,34 +96,33 @@ terraform workspace new staging && terraform apply
 
 ### 2.2 Core Concepts
 
-**Provider:**
+#### Provider
 - Plugin kết nối Terraform với infrastructure platform
 - `azurerm`, `azuread`, `google`, `kubernetes`, `github`, `cloudflare`...
 - Provider quản lý authentication và API calls
 
-**Resource:**
+#### Resource
 - Đơn vị infrastructure (Azure VM, Azure Blob, DNS record...)
 - Được tạo/quản lý bởi provider
 
-**Data Source:**
+#### Data Source
 - Query thông tin đã tồn tại (không tạo mới)
 - Ví dụ: Tìm Azure image mới nhất, lấy thông tin VNet sẵn có
 
-**State:**
+#### State
 - File JSON ghi lại trạng thái hiện tại của infrastructure
 - Terraform dùng state để biết cần thay đổi gì
 - CỰC KỲ QUAN TRỌNG - mất state = không biết gì về infrastructure
 
-**Plan:**
+#### Plan
 - Terraform đọc config + state → Tính toán difference
 - Hiện những gì sẽ được thêm/thay đổi/xóa
 - Chưa apply gì cả
 
-**Apply:**
+#### Apply
 - Thực thi plan
 - Gọi Azure Resource Manager API để tạo/sửa/xóa resources
 
----
 
 ## 3. Cài Đặt Terraform
 
@@ -191,7 +199,6 @@ export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
 # → Cấu hình trong Azure DevOps pipeline, tự động inject
 ```
 
----
 
 ## 4. Cú Pháp HCL - HashiCorp Configuration Language
 
@@ -461,7 +468,6 @@ resource "azurerm_linux_virtual_machine" "web" {
 }
 ```
 
----
 
 ## 5. Vòng Lặp Và Meta-Arguments
 
@@ -555,7 +561,6 @@ resource "azurerm_network_security_group" "web" {
 }
 ```
 
----
 
 ## 6. Terraform Commands - Vòng Đời
 
@@ -616,7 +621,3 @@ terraform output                   # Xem tất cả outputs
 terraform output vnet_id           # Xem output cụ thể
 terraform output -json             # JSON format
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Modules, State Management & Remote Backend (Azure Storage)

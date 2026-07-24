@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terraform — Azure Fundamentals"
+  collapse: false
+# ---
+
 # ☁️ TERRAFORM DÀNH CHO AZURE - PHẦN 1: FUNDAMENTALS & AZURE PROVIDER
 
----
+## Theory
+- Terraform with the Azure provider models resources declaratively; understand providers, authentication (SP/Managed Identity), and remote backend requirements.
+
+## Practice
+- Pin provider versions, configure `azurerm` backend (Azure Storage) with proper access, and store credentials in CI secrets rather than source control.
 
 ## 1. Terraform + Azure – Tổng quan
 
@@ -247,7 +257,3 @@ steps:
 | **Separate environments** – mỗi env có riêng resource group, backend key. |
 | **Tag resources** – giúp cost allocation và governance (`Environment`, `Project`, `Owner`). |
 | **Enable Azure Policy & Defender** – tự động audit compliance. |
-
----
-
-> **Tiếp theo:** Document Ansible Azure integration (playbooks, azure.azcollection, dynamic inventory).

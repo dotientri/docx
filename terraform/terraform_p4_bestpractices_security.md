@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terraform — Best Practices & Security"
+  collapse: false
+# ---
+
 # 🏗️ TERRAFORM TOÀN TẬP - PHẦN 4: BEST PRACTICES, SECURITY & PATTERNS
 
----
+## Theory
+- Best practices include modularization, version pinning, secure secrets handling, and least-privilege RBAC for automation accounts.
+
+## Practice
+- Enforce naming/tagging standards, use sensitive variables or Key Vault for secrets, pin providers, and implement custom RBAC roles for CI/CD service principals.
 
 ## 1. Terraform Best Practices
 
@@ -126,7 +136,6 @@ resource "azurerm_resource_group_policy_assignment" "require_tags" {
 }
 ```
 
----
 
 ## 2. Security Best Practices
 
@@ -307,7 +316,6 @@ infracost breakdown --path . --terraform-var-file=terraform.tfvars
 # → Estimate monthly cost của Azure resources
 ```
 
----
 
 ## 3. Advanced Patterns
 
@@ -474,7 +482,6 @@ module "aks_dr" {
 }
 ```
 
----
 
 ## 4. Cheat Sheet
 
@@ -527,7 +534,3 @@ terraform output
 terraform output -json
 terraform output resource_group_name
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Troubleshooting, Testing & Real-World Terraform với Azure

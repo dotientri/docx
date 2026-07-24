@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Kubernetes — Services, Ingress, Config & Storage"
+  collapse: false
+# ---
+
 # ☸️ KUBERNETES TOÀN TẬP - PHẦN 2: SERVICES, INGRESS, CONFIG & STORAGE
 
----
+## Theory
+- Service types (ClusterIP, NodePort, LoadBalancer, Headless) and Ingress provide stable networking and routing; ConfigMaps, Secrets, and PersistentVolumes manage configuration and stateful storage.
+
+## Practice
+- Apply Service/Ingress manifests, install an Ingress controller (NGINX/AGIC), create PVCs and StorageClasses, and test connectivity with `kubectl exec` and `kubectl port-forward`.
 
 ## 1. Services - Network Abstraction
 
@@ -158,7 +168,6 @@ spec:
 # Dùng khi migration: Từ external DB → Internal DB
 ```
 
----
 
 ## 2. Ingress - HTTP Load Balancing
 
@@ -346,7 +355,6 @@ spec:
 EOF
 ```
 
----
 
 ## 3. ConfigMaps & Secrets
 
@@ -564,7 +572,6 @@ git add sealed-myapp-secret.yaml
 git commit -m "Add sealed secrets"
 ```
 
----
 
 ## 4. Persistent Storage
 
@@ -687,7 +694,6 @@ spec:
 # → K8s tự động tạo EBS volume và PV!
 ```
 
----
 
 ## 5. StatefulSets - Stateful Applications
 
@@ -791,7 +797,6 @@ spec:
 # postgres-2.postgres-headless.production.svc.cluster.local
 ```
 
----
 
 ## 6. DaemonSet - Run on Every Node
 
@@ -857,7 +862,6 @@ spec:
             path: /var/lib/docker/containers
 ```
 
----
 
 ## 7. Jobs & CronJobs
 
@@ -910,7 +914,3 @@ spec:
                     --source /backup/ \
                     --account-name myappbackupstore
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Scaling, Scheduling, RBAC & Security

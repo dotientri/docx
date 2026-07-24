@@ -1,6 +1,19 @@
+---
+markmap:
+  title: "Ansible — CI/CD, Production & Real-World"
+  collapse: false
+---
+
 # ⚙️ ANSIBLE TOÀN TẬP - PHẦN 4: CI/CD, PRODUCTION & REAL-WORLD SCENARIOS
 
----
+## Theory
+- Tổ chức project chuẩn giúp vận hành, CI/CD và rollback an toàn.
+- Kết hợp linting, syntax-check, role dependencies, và Vault trong pipeline.
+
+## Practice
+- Sử dụng GitHub Actions/GitLab CI để lint → test → deploy.
+- Quản lý secrets qua CI secrets kết hợp Ansible Vault.
+- Triển khai rolling updates, health checks, và notifications.
 
 ## 1. Cấu Trúc Dự Án Ansible Chuẩn
 
@@ -110,7 +123,6 @@ connect_timeout = 30
 command_timeout = 300
 ```
 
----
 
 ## 2. Ansible Trong CI/CD
 
@@ -332,7 +344,6 @@ deploy:production:
     - tags
 ```
 
----
 
 ## 3. Real-World Scenarios
 
@@ -699,7 +710,6 @@ deploy:production:
       when: not kubelet_conf.stat.exists
 ```
 
----
 
 ## 4. AWX / Ansible Tower - Enterprise GUI
 
@@ -737,7 +747,3 @@ kubectl apply -f awx.yml
 # Schedule:      Tự động chạy Job Template
 # Notification:  Slack, email khi job complete/fail
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Ansible Performance, Best Practices & Cheat Sheet

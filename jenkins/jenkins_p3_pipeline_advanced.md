@@ -1,6 +1,16 @@
+---
+markmap:
+    title: "Jenkins — Advanced Pipeline & Multibranch"
+    collapse: false
+---
+
 # 🔧 JENKINS TOÀN TẬP - PHẦN 3: PIPELINE NÂNG CAO & MULTIBRANCH
 
----
+## Theory
+- Multibranch pipelines and declarative logic allow automated builds per branch/PR with conditional stages and manual approvals.
+
+## Practice
+- Configure multibranch jobs, use `when` conditions, `input` steps for approvals, and implement orphaned item pruning and PR preview environments.
 
 ## 1. Multibranch Pipeline
 
@@ -84,7 +94,6 @@ multibranchPipelineJob('myapp') {
 }
 ```
 
----
 
 ## 2. Pipeline Templates (JobDSL)
 
@@ -133,7 +142,6 @@ apps.each { app ->
 }
 ```
 
----
 
 ## 3. Advanced Pipeline Patterns
 
@@ -267,7 +275,6 @@ pipeline {
 }
 ```
 
----
 
 ## 4. Blue-Green & Canary Deployment
 
@@ -366,7 +373,6 @@ pipeline {
 }
 ```
 
----
 
 ## 5. Jenkins Monitoring & Metrics
 
@@ -412,7 +418,3 @@ jenkins_queue_size_value
 # Active executors
 jenkins_executor_in_use_value / jenkins_executor_count_value * 100
 ```
-
----
-
-> **Tiếp theo: Phần 4** - Jenkins Security, High Availability & Best Practices

@@ -1,6 +1,16 @@
+---
+markmap:
+    title: "Jenkins — Fundamentals & Pipelines"
+    collapse: false
+---
+
 # 🔧 JENKINS TOÀN TẬP - PHẦN 1: NỀN TẢNG, CÀI ĐẶT & PIPELINE CƠ BẢN
 
----
+## Theory
+- Jenkins is an automation server with a rich plugin ecosystem; pipelines as code (Declarative & Scripted) enable CI/CD workflows.
+
+## Practice
+- Install Jenkins, secure with reverse proxy/HTTPS, configure agents, and create Declarative pipelines (Jenkinsfile) with stages for build/test/deploy.
 
 ## 1. Jenkins Là Gì?
 
@@ -16,7 +26,7 @@ Jenkins = Open source automation server
 - Notify: Slack, Email, Teams
 ```
 
-**Tại sao Jenkins?**
+#### Tại sao Jenkins?
 - **Open source:** Miễn phí, không vendor lock-in
 - **Plugin ecosystem:** 1800+ plugins (Azure, AWS, Docker, K8s...)
 - **Self-hosted:** Chạy on-premise hoặc cloud
@@ -34,7 +44,6 @@ Jenkins = Open source automation server
 | Learning Curve | Cao | Thấp | Trung bình |
 | Plugin Ecosystem | Rất lớn | Lớn | Tốt |
 
----
 
 ## 2. Cài Đặt Jenkins
 
@@ -222,7 +231,6 @@ sudo mount -a
 sudo chown jenkins:jenkins /var/lib/jenkins
 ```
 
----
 
 ## 3. Jenkins Plugins Quan Trọng
 
@@ -265,7 +273,6 @@ SECURITY:
 ✅ Credentials Plugin          - Secrets store
 ```
 
----
 
 ## 4. Jenkinsfile - Pipeline as Code
 
@@ -639,7 +646,6 @@ pipeline {
 }
 ```
 
----
 
 ## 5. Jenkins Credentials Management
 
@@ -755,7 +761,3 @@ credentialsStore.addCredentials(Domain.global(), userPassCred)
 jenkins.save()
 println "Credentials added successfully!"
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Jenkins Agents, Shared Libraries & Azure Integration

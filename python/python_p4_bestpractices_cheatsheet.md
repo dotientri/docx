@@ -1,6 +1,16 @@
+# ---
+markmap:
+    title: "Python — Best Practices & Cheat Sheet"
+    collapse: false
+# ---
+
 # 🐍 PYTHON TOÀN TẬP - PHẦN 4: BEST PRACTICES & CHEAT SHEET
 
----
+## Theory
+- Use type hints, pydantic for validation, structured logging, and configuration patterns to make Python code robust and production-ready.
+
+## Practice
+- Apply `mypy`/type checks, use `pydantic`/`dataclasses` for config and validation, centralize logging with JSON formatter, and cache config loading for efficiency.
 
 ## 1. Type Hints & Pydantic
 
@@ -107,7 +117,6 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
----
 
 ## 2. Logging Best Practices
 
@@ -155,7 +164,6 @@ logger.info("Deployment started", extra={"service": "api", "version": "1.2.0"})
 logger.error("Pod failed", extra={"pod": "api-pod-abc", "namespace": "production"})
 ```
 
----
 
 ## 3. Configuration Patterns
 
@@ -193,7 +201,6 @@ def get_config():
 config = get_config()  # Loaded once, cached
 ```
 
----
 
 ## 4. Python Cheat Sheet DevOps
 
@@ -300,7 +307,6 @@ for line in read_large_file("/var/log/huge.log"):
         print(line)
 ```
 
----
 
 ## 5. Python Best Practices cho DevOps
 

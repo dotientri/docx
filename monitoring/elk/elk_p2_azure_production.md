@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "ELK — Azure Integration & Production"
+  collapse: false
+# ---
+
 # 🔍 ELK STACK TOÀN TẬP - PHẦN 2: AZURE INTEGRATION & PRODUCTION
 
----
+## Theory
+- Integrating ELK with Azure lets you use Elastic Cloud or ECK and forward logs to Azure Monitor; index templates and lifecycle policies are key for large-scale, cost-effective logging.
+
+## Practice
+- Use Elastic Cloud or deploy ECK, configure Filebeat/Logstash outputs to Azure or Elasticsearch, set index templates, mappings, and JVM tuning for production clusters.
 
 ## 1. ELK với Azure
 
@@ -97,7 +107,6 @@ requests
 | order by p95Duration desc
 ```
 
----
 
 ## 2. ELK Security (SIEM)
 
@@ -187,7 +196,6 @@ requests
 }
 ```
 
----
 
 ## 3. Production Performance Tuning
 
@@ -296,7 +304,6 @@ curl -X PUT "http://elasticsearch:9200/_slm/policy/daily-snapshots/_execute"
 curl "http://elasticsearch:9200/_snapshot/azure-backup/_all?pretty"
 ```
 
----
 
 ## 4. Kibana Dashboards & Spaces
 
@@ -336,7 +343,6 @@ curl -X POST "http://kibana:5601/api/spaces/space" \
 # Elastic Security → Role mappings → Map Azure AD group → Kibana role
 ```
 
----
 
 ## 5. Monitoring ELK Với Prometheus
 
@@ -397,6 +403,5 @@ rate(elasticsearch_indices_indexing_index_time_seconds_total[5m]) /
 rate(elasticsearch_indices_indexing_index_total[5m]) > 0.1
 ```
 
----
 
 > **Xem thêm:** `prometheus/` cho metrics, `grafana/` cho visualization tổng hợp

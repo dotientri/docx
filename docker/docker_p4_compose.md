@@ -1,6 +1,19 @@
 # 🐳 DOCKER TOÀN TẬP - PHẦN 4: DOCKER COMPOSE & NETWORKING NÂNG CAO
 
+
 ---
+markmap:
+  title: "Docker — Compose & Multi-Service"
+  collapse: false
+---
+
+# DOCKER COMPOSE - DEVELOPMENT & MULTI-SERVICE
+
+## Theory
+- Docker Compose orchestrates multi-container apps for development; uses YAML services, networks, volumes and depends_on.
+
+## Practice
+- Thực hành: provide compose examples, environment overrides, healthchecks, and tips for production vs dev usage.
 
 ## 1. Docker Compose Là Gì?
 
@@ -18,7 +31,6 @@ docker run -d --name nginx --network app-net -p 80:80 nginx:alpine
 docker compose up -d
 ```
 
----
 
 ## 2. Cú Pháp Docker Compose File
 
@@ -146,7 +158,6 @@ services:
     user: "1000:1000"          # Run as user
 ```
 
----
 
 ## 3. Ví Dụ Thực Tế: Full Stack Web App
 
@@ -411,7 +422,6 @@ services:
       - "6379:6379"               # Expose để kết nối từ host
 ```
 
----
 
 ## 4. Các Lệnh Docker Compose
 
@@ -466,7 +476,6 @@ docker compose config
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
----
 
 ## 5. Networking Nâng Cao
 
@@ -566,7 +575,6 @@ networks:
     name: monitoring-network   # Dùng network đã có sẵn
 ```
 
----
 
 ## 6. Volumes Nâng Cao
 
@@ -602,7 +610,6 @@ services:
     # Dùng cho: session data, temp uploads, secrets
 ```
 
----
 
 ## 7. Profiles - Chạy Services Có Điều Kiện
 
@@ -647,7 +654,6 @@ docker compose --profile debug up -d
 docker compose --profile production up -d
 ```
 
----
 
 ## 8. Thực Hành: Monitoring Stack (Prometheus + Grafana)
 
@@ -729,7 +735,3 @@ networks:
   monitoring:
     name: monitoring-network
 ```
-
----
-
-> **Tiếp theo: Phần 5** - Bảo mật, Production Best Practices, Registry Private, CI/CD Integration

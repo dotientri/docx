@@ -1,6 +1,19 @@
 # 🔀 GIT TOÀN TẬP - PHẦN 2: REMOTE, MERGE, REBASE & CONFLICT
 
+
 ---
+markmap:
+    title: "Git — Remote, Merge, Rebase & Workflow"
+    collapse: false
+---
+
+# GIT: REMOTE, MERGE, REBASE & WORKFLOW
+
+## Theory
+ - Remote workflows (origin, upstream), merge commits vs rebase, and branching strategies (Git Flow, trunk-based) determine collaboration model.
+
+## Practice
+ - Thực hành: fetch/pull, push, resolving merge conflicts, rebase interactive, and preserving history for code review.
 
 ## 1. Remote Repositories
 
@@ -40,7 +53,7 @@ git remote show origin
 
 ### 1.2 SSH vs HTTPS
 
-**HTTPS:**
+#### HTTPS
 ```bash
 git clone https://github.com/company/project.git
 # Cần username + password/token mỗi lần
@@ -50,7 +63,7 @@ git config --global credential.helper store        # Lưu vĩnh viễn (kém b�
 git config --global credential.helper 'cache --timeout=3600'  # Cache 1 giờ
 ```
 
-**SSH (khuyến nghị cho production):**
+## SSH (khuyến nghị cho production)
 ```bash
 # 1. Tạo SSH key pair
 ssh-keygen -t ed25519 -C "tripheo@company.com"
@@ -159,7 +172,6 @@ git checkout -b develop origin/develop
 git switch -c develop origin/develop  # Cách mới
 ```
 
----
 
 ## 2. Merging - Kết Hợp Branches
 
@@ -282,7 +294,6 @@ git config --global mergetool.vscode.cmd 'code --wait $MERGED'
 git mergetool
 ```
 
----
 
 ## 3. Rebasing - Viết Lại Lịch Sử
 
@@ -398,7 +409,6 @@ git rebase --onto main feature/auth feature/payment
 # Di chuyển commits của feature/payment (sau feature/auth) sang main
 ```
 
----
 
 ## 4. Cherry-Pick - Lấy Commit Cụ Thể
 
@@ -429,7 +439,6 @@ git checkout release/v2.0
 git cherry-pick abc123
 ```
 
----
 
 ## 5. Xem Lịch Sử - git log
 
@@ -510,7 +519,6 @@ git show a1b2c3d:src/auth.py  # Xem file ở commit cụ thể
 git show HEAD~3:package.json  # File 3 commits trước
 ```
 
----
 
 ## 6. Undoing Changes - Hoàn Tác
 
@@ -587,7 +595,6 @@ git reset --hard HEAD@{3}
 git checkout -b recover-branch d4e5f6g
 ```
 
----
 
 ## 7. Stashing - Lưu Tạm Thay Đổi
 
@@ -628,7 +635,3 @@ git stash clear             # Xóa tất cả
 # Tạo branch từ stash
 git stash branch feature/payment stash@{0}
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Git Tags, Hooks, Workflows Nâng Cao & Git trong CI/CD

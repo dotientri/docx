@@ -1,6 +1,20 @@
+---
+markmap:
+  title: "Azure — App Services, Containers & Databases"
+  collapse: false
+---
+
 # ☁️ AZURE TOÀN TẬP - PHẦN 2: APP SERVICES, CONTAINERS & DATABASES
 
----
+## Theory
+- App Services: PaaS cho web apps — managed runtime, scaling và CI integration.
+- Containers: Azure Container Instances, Azure Kubernetes Service (AKS) cho workloads containerized.
+- Databases: Managed options (Azure SQL, Cosmos DB, PostgreSQL, MySQL) with backups, HA và scale.
+
+## Practice
+- Tạo và scale App Service Plan với `az appservice plan`, deploy bằng Git/Zip/CI.
+- Dùng AKS cho production-grade orchestrations; dùng ACR để lưu image, kết hợp RBAC và AAD.
+- Chọn managed DB và bật geo-replication / automatic backups theo RTO/RPO.
 
 ## 1. Azure App Service - PaaS Web Hosting
 
@@ -217,7 +231,6 @@ az monitor autoscale profile create \
   --max-count 20
 ```
 
----
 
 ## 2. Azure Container Services
 
@@ -507,7 +520,6 @@ spec:
 EOF
 ```
 
----
 
 ## 3. Azure Database Services
 
@@ -693,7 +705,6 @@ az redis list-keys --name myapp-redis --resource-group myapp-rg
 az redis show --name myapp-redis --resource-group myapp-rg
 ```
 
----
 
 ## 4. Azure Storage
 
@@ -767,7 +778,3 @@ az storage account management-policy create \
     }]
   }'
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Azure DevOps, Monitoring & Infrastructure as Code

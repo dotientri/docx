@@ -1,6 +1,16 @@
+---
+markmap:
+    title: "Jenkins — Troubleshooting & Real-World"
+    collapse: false
+---
+
 # 🔧 JENKINS TOÀN TẬP - PHẦN 5: TROUBLESHOOTING & REAL-WORLD SCENARIOS
 
----
+## Theory
+- Common Jenkins problems include agent availability, disk/memory pressure, plugin conflicts, and misconfigured pipelines.
+
+## Practice
+- Use script console for cleanup, enable logging/heap dumps for diagnostics, implement workspace cleanup and monitor agent pools and resource quotas.
 
 ## 1. Troubleshooting Thường Gặp
 
@@ -114,7 +124,6 @@ rm /var/jenkins_home/plugins/plugin-name.jpi.pinned
 # Manage Jenkins → Manage Plugins → Dependencies tab
 ```
 
----
 
 ## 2. Groovy Script Console Cheat Sheet
 
@@ -162,7 +171,6 @@ job.setDescription("Updated description via script")
 job.save()
 ```
 
----
 
 ## 3. Real-World Scenarios
 
@@ -428,7 +436,6 @@ pipeline {
 }
 ```
 
----
 
 ## 4. Tips & Tricks
 
@@ -484,6 +491,5 @@ stages {
 }
 ```
 
----
 
 > **Kết thúc series Jenkins.** Xem thêm các topics liên quan: `k8s/`, `docker/`, `azure/` để hiểu toàn bộ stack.

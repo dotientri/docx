@@ -1,6 +1,20 @@
+---
+markmap:
+  title: "Ansible — Roles, Galaxy & Advanced Patterns"
+  collapse: false
+---
+
 # ⚙️ ANSIBLE TOÀN TẬP - PHẦN 3: ROLES, GALAXY & ADVANCED PATTERNS
 
----
+## Theory
+- Roles tách modular, tăng khả năng tái sử dụng và maintainability.
+- Galaxy & Collections cho phép chia sẻ và tiêu thụ role/collection từ cộng đồng.
+- Vault bảo vệ secrets; kết hợp CI để decrypt an toàn khi deploy.
+
+## Practice
+- Sử dụng `ansible-galaxy role init` để scaffold role chuẩn.
+- Quản lý dependency qua `meta/main.yml` và `requirements.yml`.
+- Mã hóa secrets bằng Vault và inject qua CI/CD với vault password file hoặc Ansible Vault ID.
 
 ## 1. Roles - Tái Sử Dụng Code
 
@@ -267,7 +281,6 @@ dependencies:
       tags: monitoring
 ```
 
----
 
 ## 2. Ansible Galaxy - Community Roles
 
@@ -356,7 +369,6 @@ ansible-galaxy collection install kubernetes.core
       ...
 ```
 
----
 
 ## 3. Ansible Vault - Bảo Mật Secrets
 
@@ -454,7 +466,6 @@ HOOK
 chmod +x .git/hooks/pre-commit
 ```
 
----
 
 ## 4. Advanced Ansible Patterns
 
@@ -654,7 +665,6 @@ if __name__ == '__main__':
     msg: "API responded in {{ health.response_time_ms }}ms"
 ```
 
----
 
 ## 5. Callback Plugins & Notifications
 
@@ -705,7 +715,6 @@ class CallbackModule(CallbackBase):
         urllib.request.urlopen(req)
 ```
 
----
 
 ## 6. Testing Ansible Roles với Molecule
 
@@ -837,7 +846,3 @@ molecule lint
 ansible-lint site.yml
 yamllint .
 ```
-
----
-
-> **Tiếp theo: Phần 4** - Ansible trong CI/CD, Production Patterns & Real-world Scenarios

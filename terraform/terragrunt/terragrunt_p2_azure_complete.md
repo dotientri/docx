@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terragrunt — Azure Complete"
+  collapse: false
+# ---
+
 # 🌿 TERRAGRUNT TOÀN TẬP - PHẦN 2: AZURE INFRASTRUCTURE HOÀN CHỈNH
 
----
+## Theory
+- Terragrunt helps enforce DRY patterns and manage remote state across environments, simplifying module reuse for Azure infrastructure.
+
+## Practice
+- Keep shared logic in root `terragrunt.hcl`, use `remote_state` generation for consistent backends, and use `dependency` blocks to wire module outputs.
 
 ## 1. Terraform Modules Cho Azure
 
@@ -494,7 +504,6 @@ output "server_name"   { value = azurerm_postgresql_flexible_server.main.name }
 output "database_name" { value = azurerm_postgresql_flexible_server_database.main.name }
 ```
 
----
 
 ## 2. Cấu Hình Hoàn Chỉnh Live Environment
 
@@ -549,7 +558,6 @@ inputs = {
 }
 ```
 
----
 
 ## 3. Best Practices & Tips
 
@@ -621,7 +629,3 @@ az storage blob lease break \
   --container-name tfstate \
   --blob-name aks/staging.tfstate
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Terragrunt Advanced Patterns, Testing & Maintenance

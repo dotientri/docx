@@ -1,6 +1,18 @@
+---
+markmap:
+  title: "Azure Toàn Tập — Nền tảng, IAM & Core Services"
+  collapse: false
+---
+
 # ☁️ AZURE TOÀN TẬP - PHẦN 1: NỀN TẢNG, IAM & CORE SERVICES
 
----
+## Theory
+- Azure là nền tảng cloud with IaaS/PaaS/SaaS; hiểu region, availability zones, và identity fundamentals là core.
+- Azure AD (Entra ID) cung cấp authentication, authorization, và conditional access; RBAC quản lý quyền trên resources.
+
+## Practice
+- Dùng `az` CLI để thao tác: login, chọn subscription, tạo service principal cho automation.
+- Thiết kế IAM theo principle of least privilege: dùng managed identities & role assignments, tránh shared credentials.
 
 ## 1. Azure Overview
 
@@ -8,7 +20,7 @@
 
 Microsoft Azure là nền tảng cloud computing lớn thứ 2 thế giới (sau AWS), cung cấp **200+ services** từ IaaS (VMs, Networking) đến PaaS (App Services, Databases) và SaaS (Office 365, Dynamics).
 
-**Azure mạnh ở:**
+#### Azure mạnh ở
 - Tích hợp sâu với Microsoft ecosystem (Active Directory, Office 365, Windows)
 - Hybrid cloud với Azure Arc, Azure Stack
 - .NET và Windows workloads
@@ -33,13 +45,12 @@ Azure Infrastructure:
 └── Datacenter: Physical building
 ```
 
-**Chọn Region quan trọng vì:**
+#### Chọn Region quan trọng vì
 - **Latency:** Gần users → Thấp hơn
 - **Data Residency:** Compliance, GDPR
 - **Service Availability:** Không phải service nào cũng ở mọi region
 - **Pricing:** Giá khác nhau theo region
 
----
 
 ## 2. Azure Identity & Access Management
 
@@ -214,7 +225,6 @@ az role assignment create \
 # credential = ManagedIdentityCredential()
 ```
 
----
 
 ## 3. Resource Groups - Tổ Chức Resources
 
@@ -249,7 +259,6 @@ az group delete --name myapp-production-rg --yes --no-wait
 # kv-myapp-prod-sea-001        ← Key Vault
 ```
 
----
 
 ## 4. Virtual Machines
 
@@ -375,7 +384,6 @@ az monitor autoscale rule create \
   --scale in 1               # Bỏ 1 instance
 ```
 
----
 
 ## 5. Azure Networking
 
@@ -508,7 +516,6 @@ az network application-gateway create \
   --cert-password pass
 ```
 
----
 
 ## 6. Azure Key Vault
 
@@ -588,7 +595,3 @@ az keyvault key create \
 
 az keyvault key list --vault-name myapp-kv-prod
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Azure App Services, Container Services & Databases

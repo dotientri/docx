@@ -1,6 +1,16 @@
+# ---
+markmap:
+    title: "Python — OOP, Testing & Azure SDK"
+    collapse: false
+# ---
+
 # 🐍 PYTHON TOÀN TẬP - PHẦN 2: OOP, TESTING & AZURE SDK
 
----
+## Theory
+- Use OOP for modeling resources and testing patterns to write maintainable automation; leverage Azure SDK for cloud interactions with proper authentication and retries.
+
+## Practice
+- Write dataclasses and context managers for resource lifecycle, use `pytest` for unit tests and CI, and use Azure SDK with service principals or managed identities.
 
 ## 1. Object-Oriented Programming (OOP)
 
@@ -175,7 +185,6 @@ with TempDirectory() as tmpdir:
 # Auto cleanup khi exit block
 ```
 
----
 
 ## 2. Testing với pytest
 
@@ -319,7 +328,6 @@ pytest --tb=short   # Short traceback
 pytest -q           # Quiet mode
 ```
 
----
 
 ## 3. Azure SDK cho Python
 
@@ -513,7 +521,3 @@ cpu_data = get_vm_cpu_usage("myapp-rg", "vm-web-01", hours=2)
 avg_cpu = sum(d["cpu_percent"] for d in cpu_data) / len(cpu_data) if cpu_data else 0
 print(f"Average CPU (last 2h): {avg_cpu:.1f}%")
 ```
-
----
-
-> **Tiếp theo: P3** - HTTP APIs, Async, Docker SDK, CI Scripting

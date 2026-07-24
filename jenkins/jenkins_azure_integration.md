@@ -1,6 +1,5 @@
 # 🚀 JENKINS & AZURE INTEGRATION - PHẦN 2: TÍCH HỢP VỚI AZURE
 
----
 
 ## 1. Tại sao kết hợp Jenkins với Azure?
 
@@ -14,7 +13,6 @@
 
 > **Kết luận:** Khi muốn duy trì **pipeline tự do**, tích hợp sâu với Azure services, Jenkins là lựa chọn mạnh mẽ.
 
----
 
 ## 2. Kiến trúc đề xuất (Jenkins + Azure)
 
@@ -126,7 +124,6 @@ EOF
 #   Pod Template (Docker image: jenkins/inbound-agent:latest)
 ```
 
----
 
 ## 3. Azure Service Connections trong Jenkins
 
@@ -154,7 +151,6 @@ az ad sp create-for-rbac \
 # Store these in Jenkins Credentials → "Microsoft Azure Service Principal"
 ```
 
----
 
 ## 4. Pipeline mẫu (Jenkinsfile) – Deploy to Azure AKS & ACR
 
@@ -212,7 +208,6 @@ pipeline {
 }
 ```
 
----
 
 ## 5. Best Practices cho Jenkins + Azure
 
@@ -224,6 +219,5 @@ pipeline {
 6. **Audit logs** – Azure Monitor + Log Analytics gửi Jenkins audit logs (kèm `az monitor diagnostic-settings`).
 7. **Implement Blue‑Green / Canary** deployments via Helm `--set image.tag` và `helm rollback`.
 
----
 
 > **Tiếp tục:** Phần 3 sẽ giới thiệu **monitoring** chuyên sâu cho Kubernetes trên Azure (Prometheus, Azure Monitor, Grafana).

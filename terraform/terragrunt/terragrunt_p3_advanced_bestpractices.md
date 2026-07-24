@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Terragrunt — Advanced Patterns & Best Practices"
+  collapse: false
+# ---
+
 # 🌿 TERRAGRUNT TOÀN TẬP - PHẦN 3: ADVANCED PATTERNS & BEST PRACTICES
 
----
+## Theory
+- Terragrunt extends Terraform with DRY patterns, dynamic generation, and hooks to manage cross-environment complexity and remote state generation.
+
+## Practice
+- Use `generate` blocks for provider/backend, remote state blocks for consistent backends, and hooks for validation, formatting, and notifications in CI.
 
 ## 1. Generate Blocks Nâng Cao
 
@@ -103,7 +113,6 @@ remote_state {
 }
 ```
 
----
 
 ## 2. Before/After Hooks
 
@@ -170,7 +179,6 @@ terraform {
 }
 ```
 
----
 
 ## 3. Dependency Patterns
 
@@ -218,7 +226,6 @@ inputs = {
 }
 ```
 
----
 
 ## 4. Testing Terragrunt với Terratest
 
@@ -280,7 +287,6 @@ func TestAKSModule(t *testing.T) {
 }
 ```
 
----
 
 ## 5. Terragrunt Best Practices
 
@@ -401,6 +407,5 @@ MODULES:
 ✅ Tests với Terratest cho modules quan trọng
 ```
 
----
 
 > **Kết thúc series Terragrunt.** Tham khảo thêm: `terraform/`, `azure/`, `k8s/` cho full infrastructure stack.

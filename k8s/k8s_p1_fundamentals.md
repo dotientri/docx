@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Kubernetes — Fundamentals & Architecture"
+  collapse: false
+# ---
+
 # ☸️ KUBERNETES TOÀN TẬP - PHẦN 1: NỀN TẢNG & KIẾN TRÚC
 
----
+## Theory
+- Core architecture: control plane components (`kube-apiserver`, `etcd`, `kube-scheduler`, `controller-manager`) manage desired state; worker nodes run `kubelet` and `kube-proxy` to host Pods and route traffic.
+
+## Practice
+- Install local clusters with `minikube`/`kind`/`k3s`, use `kubectl` to inspect resources, configure `kubeconfig` contexts, and ensure etcd backups and HA control plane in production.
 
 ## 1. Kubernetes Là Gì?
 
@@ -19,7 +29,7 @@ Không có Kubernetes:
 - Scaling → Thủ công
 ```
 
-**Kubernetes (K8s) giải quyết:**
+#### Kubernetes (K8s) giải quyết
 - **Self-healing:** Pod chết → K8s tự restart
 - **Auto-scaling:** Load tăng → K8s tự thêm instances
 - **Rolling updates:** Zero-downtime deployments
@@ -59,57 +69,55 @@ Không có Kubernetes:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
----
 
 ## 2. Kiến Trúc Chi Tiết
 
 ### 2.1 Control Plane Components
 
-**kube-apiserver:**
+#### kube-apiserver
 - API gateway duy nhất của cluster
 - Xác thực và ủy quyền mọi request
 - Validate và persist resources vào etcd
 - kubectl, dashboard, operators đều giao tiếp qua API server
 
-**etcd:**
+#### etcd
 - Distributed key-value store
 - Lưu toàn bộ state của cluster
 - Highly available (consensus với Raft algorithm)
 - **CRITICAL:** Backup etcd = backup toàn bộ cluster!
 
-**kube-scheduler:**
+#### kube-scheduler
 - Quyết định Pod nên chạy ở Node nào
 - Xem xét: resource requirements, node capacity, affinity rules, taints/tolerations
 - Scheduling policies: spread, binpack, most/least requested
 
-**kube-controller-manager:**
+#### kube-controller-manager
 - Tập hợp các controllers chạy trong 1 process
 - Deployment Controller, ReplicaSet Controller, Node Controller, Endpoint Controller...
 - Watch state → Compare với desired → Take action
 
-**cloud-controller-manager:**
+#### cloud-controller-manager
 - Tích hợp với cloud provider (AWS, GCP, Azure)
 - Quản lý: Load Balancers, Storage volumes, Node lifecycle
 
 ### 2.2 Worker Node Components
 
-**kubelet:**
+#### kubelet
 - Agent chạy trên mỗi worker node
 - Nhận PodSpec từ API Server
 - Đảm bảo containers trong Pod đang chạy và healthy
 - Report node/pod status lên API Server
 
-**kube-proxy:**
+#### kube-proxy
 - Network proxy chạy trên mỗi node
 - Implement K8s Service networking (iptables/IPVS rules)
 - Load balancing traffic đến Pods
 
-**Container Runtime:**
+#### Container Runtime
 - containerd (phổ biến nhất)
 - CRI-O (RedHat)
 - Docker (deprecated)
 
----
 
 ## 3. Cài Đặt Kubernetes
 
@@ -194,7 +202,6 @@ kubectx                 # List và switch contexts
 kubens                  # List và switch namespaces
 ```
 
----
 
 ## 4. Kubernetes Objects - Building Blocks
 
@@ -436,7 +443,6 @@ kubectl rollout resume deployment/myapp
 kubectl rollout restart deployment/myapp
 ```
 
----
 
 ## 5. Namespaces - Isolation
 
@@ -521,7 +527,6 @@ spec:
 EOF
 ```
 
----
 
 ## 6. kubectl Quick Reference
 
@@ -590,7 +595,3 @@ kubectl top nodes                   # Node resource usage
 kubectl top pods                    # Pod resource usage
 kubectl top pods -n production
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Services, Ingress, ConfigMaps, Secrets

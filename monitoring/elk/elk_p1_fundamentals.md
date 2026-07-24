@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "ELK Stack — Elasticsearch & Kibana"
+  collapse: false
+# ---
+
 # 🔍 ELK STACK TOÀN TẬP - PHẦN 1: ELASTICSEARCH & KIBANA
 
----
+## Theory
+- ELK (Elasticsearch, Logstash, Kibana) provides full-text search and analytics for logs; ElasticSearch indexes logs for fast queries while Kibana visualizes dashboards for analysis.
+
+## Practice
+- Deploy ELK via Docker Compose or ECK on Kubernetes, secure the cluster (TLS, auth), and configure Filebeat/Logstash to ship and transform logs into Elasticsearch indices.
 
 ## 1. ELK Stack Là Gì?
 
@@ -20,13 +30,13 @@ Hoặc đơn giản hơn (không cần Logstash):
 Filebeat → Elasticsearch → Kibana
 ```
 
-**Use cases:**
+### Use cases
 - **Log centralization**: Thu thập log từ nhiều server/container
 - **Full-text search**: Tìm kiếm trong log nhanh
 - **Security analytics**: SIEM, threat detection
 - **APM**: Application Performance Monitoring
 
-**ELK vs Loki:**
+### ELK vs Loki
 | | ELK | Loki |
 |--|-----|------|
 | Full-text search | ✅ Rất mạnh | ❌ Giới hạn |
@@ -35,7 +45,6 @@ Filebeat → Elasticsearch → Kibana
 | K8s native | Partial | ✅ Native |
 | Azure integration | Có | Có |
 
----
 
 ## 2. Cài Đặt ELK trên Docker Compose
 
@@ -131,7 +140,6 @@ networks:
   elk:
 ```
 
----
 
 ## 3. Cài ELK trên Kubernetes (ECK - Elastic Cloud on Kubernetes)
 
@@ -241,7 +249,6 @@ spec:
               memory: 2Gi
 ```
 
----
 
 ## 4. Logstash Pipeline
 
@@ -359,7 +366,6 @@ output {
 }
 ```
 
----
 
 ## 5. Filebeat Config
 
@@ -414,7 +420,6 @@ processors:
   - add_docker_metadata: ~
 ```
 
----
 
 ## 6. Elasticsearch Index Lifecycle Management (ILM)
 
@@ -459,7 +464,6 @@ processors:
 }
 ```
 
----
 
 ## 7. Kibana KQL Queries
 
@@ -493,7 +497,3 @@ response_time > 2 AND response_code: 200
 # Tìm theo IP
 client_ip: "1.2.3.4"
 ```
-
----
-
-> **Tiếp theo: Phần 2** - ELK Security (SIEM), Azure Integration & Production Tuning

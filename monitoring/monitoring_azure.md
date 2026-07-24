@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Monitoring — Azure & Kubernetes"
+  collapse: false
+# ---
+
 # 📊 MONITORING DÀNH CHO AZURE & KUBERNETES
 
----
+## Theory
+- Azure Monitor centralizes metrics and logs (Log Analytics + Metrics + Application Insights) for cloud-native observability; choose between Azure-native and open-source stacks based on control and customization needs.
+
+## Practice
+- Create Log Analytics workspaces, enable AKS monitoring addon, write KQL queries for alerts, and decide when to deploy Prometheus+Grafana vs. use Azure Managed Prometheus.
 
 ## 1. Azure Monitor – Giám sát tích hợp toàn bộ
 
@@ -93,7 +103,6 @@ az monitor scheduled-query create \
   --action-group myapp-alerts
 ```
 
----
 
 ## 2. Prometheus + Grafana trên AKS (Open‑Source stack)
 
@@ -154,7 +163,6 @@ az monitor prometheus create \
 
 Khi bật, Prometheus scrape sẽ được Azure Monitor thu thập, cho phép sử dụng **Azure Dashboard** hoặc **Log Analytics** để query.
 
----
 
 ## 3. Azure Application Insights (APM) cho app trên AKS
 
@@ -178,7 +186,6 @@ APP_INSIGHTS_CS=$(az monitor app-insights component show \
 
 Trong pod (Node.js, Java, .NET…) cấu hình env var `APPLICATIONINSIGHTS_CONNECTION_STRING=$APP_INSIGHTS_CS`.
 
----
 
 ## 4. Tổng kết – Khi nào dùng công cụ nào?
 | Scenario | Recommendation |
@@ -187,7 +194,3 @@ Trong pod (Node.js, Java, .NET…) cấu hình env var `APPLICATIONINSIGHTS_CONN
 | **Open‑source stack, high‑customization** | Prometheus + Grafana (kube‑prometheus‑stack) – optionally remote‑write to Azure Monitor |
 | **Simple alerting cho AKS** | Azure Monitor Alerts (metric & log) |
 | **Dashboards cho team** | Grafana (cloud or self‑hosted) – kết nối tới Prometheus & Azure Log Analytics via Azure Data Explorer plugin |
-
----
-
-> **Tiếp theo:** Tài liệu Terraform và Ansible sẽ được cập nhật để phản ánh **Azure‑first** pattern (provider, backend, modules).

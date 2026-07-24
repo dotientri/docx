@@ -1,6 +1,16 @@
+---
+markmap:
+    title: "Go — Concurrency, HTTP & CLI Tools"
+    collapse: false
+---
+
 # 🐹 GO TOÀN TẬP - PHẦN 2: CONCURRENCY, HTTP & CLI TOOLS
 
----
+## Theory
+- Goroutines and channels provide lightweight concurrency primitives; context handles cancellations and deadlines for robust CLI/network tools.
+
+## Practice
+- Implement worker pools, use `context` for timeouts, build CLI tools with `cobra`/`urfave/cli`, and use `net/http` with graceful shutdown and health endpoints.
 
 ## 1. Concurrency - Goroutines & Channels
 
@@ -214,7 +224,6 @@ func main() {
 }
 ```
 
----
 
 ## 2. HTTP Server (net/http)
 
@@ -391,7 +400,6 @@ func (c *APIClient) GetPods(ctx context.Context, namespace string) ([]Pod, error
 }
 ```
 
----
 
 ## 3. CLI Tools với Cobra
 
@@ -519,7 +527,6 @@ go build -o devops-cli ./cmd/main.go
 ./devops-cli deploy api 1.2.0 -n production --timeout 600
 ```
 
----
 
 ## 4. Ví Dụ Thực Tế: Kubernetes Pod Watcher
 
@@ -616,7 +623,3 @@ GOOS=linux GOARCH=amd64 go build -o pod-watcher-linux ./cmd/watcher/main.go
 # Chạy
 ./pod-watcher --namespace production
 ```
-
----
-
-> **Tiếp theo: P3** - Testing, JSON/YAML, Configuration, Azure SDK cho Go

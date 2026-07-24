@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Kubernetes — Scaling, Scheduling & RBAC"
+  collapse: false
+# ---
+
 # ☸️ KUBERNETES TOÀN TẬP - PHẦN 3: SCALING, SCHEDULING, RBAC & SECURITY
 
----
+## Theory
+- Autoscaling (HPA/VPA/KEDA), scheduler decisions (affinity/taints/tolerations), and RBAC are key to efficient, secure cluster operation; cluster autoscaler manages node capacity.
+
+## Practice
+- Configure HPA/VPA/KEDA for workloads, use affinity/taints for placement, set Role/RoleBinding and audit RBAC policies; monitor scaling with `kubectl get hpa` and cluster autoscaler logs.
 
 ## 1. Autoscaling
 
@@ -203,7 +213,6 @@ kubectl logs -n kube-system -l app=cluster-autoscaler -f
 # Không cần tag như AWS ASG
 ```
 
----
 
 ## 2. Advanced Scheduling
 
@@ -346,7 +355,6 @@ spec:
   priorityClassName: critical-apps
 ```
 
----
 
 ## 3. RBAC - Role-Based Access Control
 
@@ -537,7 +545,6 @@ kubectl get clusterrolebindings
 kubectl auth reconcile -f rbac.yaml  # Check và fix RBAC
 ```
 
----
 
 ## 4. Pod Security
 
@@ -692,7 +699,6 @@ spec:
       - staging
 ```
 
----
 
 ## 5. Health Management
 
@@ -750,7 +756,3 @@ containers:
       tcpSocket:
         port: 5432               # Check TCP port open
 ```
-
----
-
-> **Tiếp theo: Phần 4** - Helm, Operators, Monitoring & CI/CD với K8s

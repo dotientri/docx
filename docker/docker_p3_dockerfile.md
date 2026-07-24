@@ -1,6 +1,19 @@
 # 🐳 DOCKER TOÀN TẬP - PHẦN 3: DOCKERFILE CHUYÊN NGHIỆP
 
+
 ---
+markmap:
+    title: "Docker — Dockerfile Best Practices"
+    collapse: false
+---
+
+# DOCKERFILE - VIẾT CHUẨN & TỐI ƯU
+
+## Theory
+- Dockerfile layers and build caching determine image size and build speed; multi-stage builds reduce final image footprint.
+
+## Practice
+- Thực hành: cung cấp mẫu multi-stage Dockerfile, healthchecks, non-root user, and label/metadata practices.
 
 ## 1. Dockerfile Là Gì?
 
@@ -10,7 +23,6 @@
 Dockerfile (instructions) ──▶ docker build ──▶ Docker Image ──▶ docker run ──▶ Container
 ```
 
----
 
 ## 2. Tất Cả Instruction Trong Dockerfile
 
@@ -50,7 +62,7 @@ COPY . .           # Nghĩa là: COPY . /app
 RUN ls             # Chạy ls trong /app
 ```
 
-**Tại sao cần WORKDIR?**
+## Tại sao cần WORKDIR?
 - Tránh dùng `cd` rải rác trong Dockerfile (khó đọc, dễ sai)
 - Tạo cấu trúc rõ ràng
 - Khi `docker exec -it container bash`, bắt đầu ở đây
@@ -127,7 +139,7 @@ LABEL version="$APP_VERSION" \
 # docker build --build-arg APP_VERSION=2.0.0 .
 ```
 
-**Khác biệt ARG vs ENV:**
+## Khác biệt ARG vs ENV
 ```dockerfile
 ARG SECRET_KEY      # ✅ An toàn: không tồn tại trong container
 ENV SECRET_KEY=xxx  # ❌ Nguy hiểm: có thể thấy qua docker inspect!
@@ -181,7 +193,7 @@ CMD ["--port", "5000"]           # Default arguments
 # docker run --entrypoint bash myimage  → Vào shell (override ENTRYPOINT)
 ```
 
-**Exec form vs Shell form:**
+## Exec form vs Shell form
 ```dockerfile
 # Shell form: chạy qua /bin/sh -c → PID 1 là sh, app là child
 CMD python app.py
@@ -244,7 +256,6 @@ LABEL org.opencontainers.image.source="https://github.com/company/repo"
 docker inspect --format='{{json .Config.Labels}}' image-name
 ```
 
----
 
 ## 3. Best Practices Viết Dockerfile
 
@@ -347,7 +358,6 @@ RUN --mount=type=secret,id=mytoken \
 # docker run -e DB_PASSWORD=secret myimage
 ```
 
----
 
 ## 4. Multi-Stage Build (Quan Trọng!)
 
@@ -458,7 +468,6 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:create_app()"]
 ```
 
----
 
 ## 5. Ví Dụ Dockerfile Hoàn Chỉnh Theo Ngôn Ngữ
 
@@ -523,7 +532,7 @@ HEALTHCHECK --interval=30s --timeout=5s \
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-**`nginx.conf`:**
+## `nginx.conf`
 ```nginx
 server {
     listen 80;
@@ -547,7 +556,6 @@ server {
 }
 ```
 
----
 
 ## 6. Build Image
 
@@ -583,7 +591,6 @@ docker buildx build \
 docker build --progress=plain -t myapp:latest .
 ```
 
----
 
 ## 7. Kiểm Tra & Debug Image
 
@@ -605,7 +612,3 @@ docker run --rm -it myapp:latest sh
 docker scan myapp:latest          # Dùng Snyk (cũ)
 docker scout cves myapp:latest    # Docker Scout (mới)
 ```
-
----
-
-> **Tiếp theo: Phần 4** - Docker Compose, Networking nâng cao, Volumes nâng cao

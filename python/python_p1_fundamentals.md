@@ -1,6 +1,16 @@
+# ---
+markmap:
+    title: "Python — Fundamentals"
+    collapse: false
+# ---
+
 # 🐍 PYTHON TOÀN TẬP - PHẦN 1: FUNDAMENTALS
 
----
+## Theory
+- Python is a versatile scripting language for automation, SDK usage, and building DevOps tools; understand virtual environments, core data types, and modules.
+
+## Practice
+- Use `pyenv`/`venv` or `poetry` for isolated environments, write idempotent scripts, and prefer small modules with clear CLI interfaces for automation tasks.
 
 ## 1. Python Basics cho DevOps
 
@@ -33,7 +43,6 @@ poetry add requests azure-mgmt-resource
 poetry shell
 ```
 
----
 
 ## 2. Data Types & Control Flow
 
@@ -128,7 +137,6 @@ for cpu in cpu_gen:                        # Chạy từng cái
     print(cpu)
 ```
 
----
 
 ## 3. Functions
 
@@ -205,7 +213,6 @@ def unstable_api_call():
     return "success"
 ```
 
----
 
 ## 4. Error Handling
 
@@ -256,7 +263,6 @@ def deploy_service(name: str):
         raise DeploymentError(name, "Deployment timed out after 10 minutes")
 ```
 
----
 
 ## 5. File & OS Operations
 
@@ -318,7 +324,6 @@ result = subprocess.run(
 )
 ```
 
----
 
 ## 6. Modules & Packages
 
@@ -350,7 +355,6 @@ import csv          # CSV files
 import configparser # INI config files
 ```
 
----
 
 ## 7. Ví Dụ Thực Tế: Script Rotate Logs
 
@@ -441,7 +445,3 @@ python3 rotate_logs.py /var/log/myapp --max-size 50 --keep-days 7
 # Thêm vào crontab
 0 2 * * * /usr/bin/python3 /opt/scripts/rotate_logs.py /var/log/myapp
 ```
-
----
-
-> **Tiếp theo: P2** - OOP, Modules, Testing, Azure SDK

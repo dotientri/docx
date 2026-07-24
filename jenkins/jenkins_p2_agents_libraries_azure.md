@@ -1,6 +1,16 @@
+---
+markmap:
+  title: "Jenkins — Agents, Shared Libraries & Azure"
+  collapse: false
+---
+
 # 🔧 JENKINS TOÀN TẬP - PHẦN 2: AGENTS, SHARED LIBRARIES & AZURE
 
----
+## Theory
+- Agents (static/dynamic) execute builds; shared libraries promote DRY pipelines; Azure integrations enable resource provisioning and artifact storage.
+
+## Practice
+- Use Kubernetes dynamic agents for isolation, implement shared libraries for common pipeline steps, and integrate with Azure DevOps/ACR/AKS via service principals or managed identities.
 
 ## 1. Jenkins Agents
 
@@ -155,7 +165,6 @@ jenkins:
                 idleTerminationMinutes: 30
 ```
 
----
 
 ## 2. Shared Libraries
 
@@ -351,7 +360,6 @@ pipeline {
 }
 ```
 
----
 
 ## 3. Jenkins Configuration as Code (JCasC)
 
@@ -442,7 +450,3 @@ tool:
         id: Node20
         version: 20.11.0
 ```
-
----
-
-> **Tiếp theo: Phần 3** - Jenkins Pipeline Advanced, Multi-branch & GitOps

@@ -1,6 +1,16 @@
+# ---
+markmap:
+    title: "Python — HTTP, Async & DevOps Scripting"
+    collapse: false
+# ---
+
 # 🐍 PYTHON TOÀN TẬP - PHẦN 3: HTTP, ASYNC, DEVOPS SCRIPTING
 
----
+## Theory
+- Use synchronous (`requests`) and asynchronous (`httpx`/`asyncio`) approaches appropriately: sync for simple tasks, async for high-concurrency I/O-bound work.
+
+## Practice
+- Create robust HTTP sessions with retries and timeouts, use `httpx.AsyncClient` for concurrent health checks, and wrap network calls with proper exception handling and backoff.
 
 ## 1. HTTP Requests (requests & httpx)
 
@@ -114,7 +124,6 @@ for r in results:
     print(f"{status} {r['url']}")
 ```
 
----
 
 ## 2. Async Python (asyncio)
 
@@ -190,7 +199,6 @@ async def main():
 asyncio.run(main())
 ```
 
----
 
 ## 3. Docker SDK cho Python
 
@@ -261,7 +269,6 @@ def cleanup_docker():
     print(f"Freed space: {images_result.get('SpaceReclaimed', 0) / 1024 / 1024:.1f}MB")
 ```
 
----
 
 ## 4. DevOps Automation Scripts
 
@@ -457,7 +464,6 @@ if __name__ == "__main__":
     print(format_report(costs))
 ```
 
----
 
 ## 5. CLI Tools với Click
 
@@ -527,7 +533,3 @@ pip install click
 python3 devops_cli.py pods production
 python3 devops_cli.py deploy production api-server 1.2.0
 ```
-
----
-
-> **Tiếp theo: P4** - Type Hints, Configuration Management, Best Practices, Cheat Sheet

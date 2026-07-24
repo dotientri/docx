@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Prometheus — Fundamentals & Installation"
+  collapse: false
+# ---
+
 # 📊 PROMETHEUS TOÀN TẬP - PHẦN 1: NỀN TẢNG & CÀI ĐẶT
 
----
+## Theory
+- Prometheus is a pull-based time-series monitoring system with PromQL for queries; it stores metrics in a TSDB and integrates with Alertmanager and Grafana for visualization and alerting.
+
+## Practice
+- Install via binaries or `kube-prometheus-stack` Helm chart, configure `prometheus.yml` scrape targets and retention, and secure storage with PVCs and resource limits.
 
 ## 1. Prometheus Là Gì?
 
@@ -32,7 +42,7 @@
                                  └────────┘
 ```
 
-**Đặc điểm:**
+#### Đặc điểm
 - **Pull-based**: Prometheus tự đến pull metrics từ targets
 - **Time Series DB**: Lưu metrics dạng `metric_name{labels} value timestamp`
 - **PromQL**: Ngôn ngữ query mạnh mẽ
@@ -58,7 +68,6 @@
    rpc_duration_seconds{quantile="0.95"} 0.123
 ```
 
----
 
 ## 2. Cài Đặt
 
@@ -229,7 +238,6 @@ az grafana update \
 # Query bằng PromQL trong Azure Managed Grafana hoặc Azure Portal
 ```
 
----
 
 ## 3. Cấu Hình prometheus.yml
 
@@ -340,7 +348,6 @@ scrape_configs:
         regex: myapp-backend
 ```
 
----
 
 ## 4. PromQL Cơ Bản
 
@@ -487,7 +494,6 @@ groups:
           summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} replicas mismatch"
 ```
 
----
 
 ## 5. AlertManager Cấu Hình
 
@@ -546,7 +552,3 @@ inhibit_rules:
       severity: warning
     equal: ['alertname', 'cluster']
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Exporters, ServiceMonitor, Recording Rules & Azure Integration

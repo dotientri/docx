@@ -1,6 +1,16 @@
+---
+markmap:
+    title: "Go — Fundamentals"
+    collapse: false
+---
+
 # 🐹 GO TOÀN TẬP - PHẦN 1: FUNDAMENTALS
 
----
+## Theory
+- Go is a compiled, statically-typed language optimized for concurrency and tooling; common in cloud-native ecosystems.
+
+## Practice
+- Build single static binaries, write concurrent tools using goroutines/channels, cross-compile for target OS/arch, and add tests and CI.
 
 ## 1. Tại Sao Go cho DevOps?
 
@@ -30,7 +40,6 @@ go run ./cmd/main.go
 GOOS=linux GOARCH=amd64 go build -o myapp-linux ./cmd/main.go
 ```
 
----
 
 ## 2. Basic Syntax
 
@@ -199,7 +208,6 @@ func main() {
 }
 ```
 
----
 
 ## 3. Functions & Interfaces
 
@@ -363,7 +371,6 @@ func main() {
 }
 ```
 
----
 
 ## 4. Error Handling
 
@@ -443,7 +450,6 @@ func safeExecute(fn func()) (err error) {
 }
 ```
 
----
 
 ## 5. Packages & Modules
 
@@ -489,7 +495,3 @@ require (
 // go mod tidy    (remove unused, update go.sum)
 // go mod vendor  (download to vendor/ for offline builds)
 ```
-
----
-
-> **Tiếp theo: P2** - Concurrency (Goroutines, Channels), HTTP servers, CLI tools

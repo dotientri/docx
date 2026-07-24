@@ -1,6 +1,16 @@
+---
+markmap:
+    title: "Go — Testing, Config & SDKs"
+    collapse: false
+---
+
 # 🐹 GO TOÀN TẬP - PHẦN 3: TESTING, CONFIG, AZURE SDK & CHEAT SHEET
 
----
+## Theory
+- Testing (unit, integration, benchmarks) and proper config handling (env, files) are essential for reliable Go tools; use interfaces for mocking.
+
+## Practice
+- Run `go test` with race detector, coverage; use table-driven tests; marshal/unmarshal JSON/YAML; integrate with CI to enforce quality.
 
 ## 1. Testing trong Go
 
@@ -158,7 +168,6 @@ func BenchmarkParseImage(b *testing.B) {
 }
 ```
 
----
 
 ## 2. JSON & YAML Handling
 
@@ -246,7 +255,6 @@ func main() {
 }
 ```
 
----
 
 ## 3. Configuration với Viper
 
@@ -359,7 +367,6 @@ kubernetes:
   namespace: production
 ```
 
----
 
 ## 4. Go Cheat Sheet
 
@@ -511,7 +518,6 @@ func retry(attempts int, sleep time.Duration, fn func() error) error {
 }
 ```
 
----
 
 ## 5. Go Best Practices cho DevOps
 

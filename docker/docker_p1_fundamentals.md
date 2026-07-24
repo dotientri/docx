@@ -1,8 +1,19 @@
-# 🐳 DOCKER TOÀN TẬP - PHẦN 1: LÝ THUYẾT NỀN TẢNG
-
-> **Đọc theo thứ tự:** P1 → P2 → P3 → P4 → P5
-
 ---
+markmap:
+  title: "Docker — Fundamentals"
+  collapse: false
+---
+
+# DOCKER TOÀN TẬP - PHẦN 1: NỀN TẢNG & KIẾN THỨC CƠ BẢN
+
+## Theory
+- Docker là runtime container sử dụng kernel features để cô lập workloads; image layering và registries là khái niệm cốt lõi.
+
+## Practice
+- Thực hành: xây Dockerfile multi-stage, chạy container, quản lý volumes, và triển khai lên registry.
+
+## 1. Docker Là Gì?
+# 🐳 DOCKER TOÀN TẬP - PHẦN 1: LÝ THUYẾT NỀN TẢNG
 
 ## 1. Docker Là Gì? Tại Sao Cần Dùng?
 
@@ -47,7 +58,6 @@ Server Production (Ubuntu 20.04, Python 3.8):
 | Thử nghiệm DB mới | Cài vào máy, lỡ phá | Chạy container, xong xóa |
 | CI/CD | Môi trường build khác nhau | Build environment nhất quán |
 
----
 
 ## 2. Kiến Trúc Docker
 
@@ -119,7 +129,6 @@ Docker sử dụng **3 tính năng của Linux kernel**:
 **cgroups** giới hạn tài nguyên mỗi container được dùng.
 **OverlayFS** cho phép nhiều container dùng chung phần read-only của image, tiết kiệm disk.
 
----
 
 ## 3. Container vs Virtual Machine
 
@@ -161,12 +170,12 @@ VM App B muốn chạy:         Container App B muốn chạy:
 
 ### 3.3 Khi Nào Dùng VM, Khi Nào Dùng Container?
 
-**Dùng VM khi:**
+#### Dùng VM khi
 - Cần OS khác nhau hoàn toàn (chạy Windows app trên Linux server)
 - Yêu cầu bảo mật tuyệt đối (banking, healthcare)
 - Legacy software không thể container hóa
 
-**Dùng Container khi:**
+#### Dùng Container khi
 - Microservices, web apps, APIs
 - CI/CD pipelines
 - Development environments
@@ -174,7 +183,6 @@ VM App B muốn chạy:         Container App B muốn chạy:
 
 > **Thực tế doanh nghiệp:** Nhiều công ty dùng **cả hai** — VM làm host, container chạy bên trong VM để có cả hai lợi ích.
 
----
 
 ## 4. Các Khái Niệm Cốt Lõi
 
@@ -206,7 +214,7 @@ VM App B muốn chạy:         Container App B muốn chạy:
         READ-ONLY
 ```
 
-**Tại sao cần biết về layers?**
+#### Tại sao cần biết về layers?
 - Layers được **cache**. Nếu Layer 1, 2, 3 không đổi → chỉ build lại Layer 4
 - Nhiều image **dùng chung** layers → tiết kiệm disk và download time
 - Sắp xếp Dockerfile đúng thứ tự → build nhanh hơn nhiều
@@ -259,7 +267,7 @@ Docker Hub (public registry)
     └── your-username/my-app:v1.1
 ```
 
-**Image naming convention:**
+#### Image naming convention
 ```
 [registry/][username/]repository[:tag]
 
@@ -271,13 +279,12 @@ Ví dụ Docker Hub:
   myusername/myapp:latest
 ```
 
-**Tag phổ biến:**
+#### Tag phổ biến
 - `latest`: mặc định, bản mới nhất (CẢNH BÁO: không dùng trong production!)
 - `alpine`: image nhỏ gọn dựa trên Alpine Linux (~5MB)
 - `slim`: image nhẹ hơn bản đầy đủ
 - `v1.2.3`: version cụ thể (khuyến nghị dùng trong production)
 
----
 
 ## 5. Cài Đặt Docker
 
@@ -391,13 +398,12 @@ sudo nano /etc/docker/daemon.json
 sudo systemctl restart docker
 ```
 
-**Giải thích:**
+## Giải thích
 - `log-driver/log-opts`: Giới hạn log file để tránh đầy disk (rất quan trọng trong production!)
 - `storage-driver: overlay2`: Driver filesystem tốt nhất trên Linux hiện đại
 - `registry-mirrors`: Mirror để download image nhanh hơn
 - `default-ulimits`: Giới hạn file descriptor, quan trọng cho app nhiều connections
 
----
 
 ## 6. Hiểu Docker Image Layers Sâu Hơn
 
@@ -443,7 +449,6 @@ docker system df
 # Local Volumes   0         0         0B        0B
 ```
 
----
 
 ## 7. Docker Trong Doanh Nghiệp - Bức Tranh Lớn
 
@@ -492,7 +497,3 @@ Load Balancer (Nginx/HAProxy)
 │  └──────────────────────────┘    │
 └───────────────────────────────────┘
 ```
-
----
-
-> **Tiếp theo: Phần 2** - Các lệnh Docker cơ bản, làm việc với Images và Containers

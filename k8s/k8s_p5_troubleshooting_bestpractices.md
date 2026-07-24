@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Kubernetes — Troubleshooting & Best Practices"
+  collapse: false
+# ---
+
 # ☸️ KUBERNETES TOÀN TẬP - PHẦN 5: TROUBLESHOOTING, BEST PRACTICES & CHEAT SHEET
 
----
+## Theory
+- Troubleshooting follows a structured approach: inspect pod status/events, logs, node conditions, and networking; follow resource and quota checks to find root causes.
+
+## Practice
+- Use `kubectl describe`, `kubectl logs`, `kubectl exec`, debug containers, `kubectl top`, and CoreDNS/Ingress logs; automate workspace cleanup and set resource requests/limits and PodDisruptionBudgets.
 
 ## 1. Debugging Pods
 
@@ -143,7 +153,6 @@ kubectl drain node1 --ignore-daemonsets --delete-emptydir-data
 kubectl uncordon node1   # Sau khi maintenance
 ```
 
----
 
 ## 2. Common Issues & Solutions
 
@@ -211,7 +220,6 @@ kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx
 curl -H "Host: api.company.com" http://INGRESS_IP/endpoint
 ```
 
----
 
 ## 3. Performance Best Practices
 
@@ -330,7 +338,6 @@ spec:
       # Cho phép existing requests complete trước khi kill
 ```
 
----
 
 ## 4. Production Checklist
 
@@ -356,7 +363,6 @@ spec:
 ☐ Update Strategy: RollingUpdate với maxUnavailable: 0
 ```
 
----
 
 ## 5. kubectl Cheat Sheet Toàn Tập
 
@@ -443,7 +449,6 @@ alias kl='kubectl logs'
 alias ke='kubectl exec -it'
 ```
 
----
 
 ## 6. Kubernetes vs Docker Swarm vs Nomad
 
@@ -458,19 +463,18 @@ alias ke='kubectl exec -it'
 | Non-container | ❌ Chỉ K8s | ❌ | ✅ VMs, bare metal |
 | GitOps tools | ArgoCD, Flux | Hạn chế | Consul |
 
-**Khi nào dùng K8s:**
+### Khi nào dùng K8s
 - Microservices phức tạp
 - Cần auto-scaling mạnh
 - Multi-cloud
 - Team có K8s experience
 - Production workloads lớn
 
-**Khi nào KHÔNG dùng K8s:**
+### Khi nào KHÔNG dùng K8s
 - Ứng dụng nhỏ, đơn giản
 - Team ít người, không có K8s knowledge
 - Single-server deployment
 - Budget hạn chế (K8s control plane tốn chi phí)
 
----
 
 > **Hoàn thành Kubernetes Toàn Tập!** Tiếp theo: Azure

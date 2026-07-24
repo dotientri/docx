@@ -1,6 +1,16 @@
+# ---
+markmap:
+  title: "Docker — Production, Security & Hardening"
+  collapse: false
+# ---
+
 # 🐳 DOCKER TOÀN TẬP - PHẦN 5: BẢO MẬT, PRODUCTION & THỰC CHIẾN
 
----
+## Theory
+- Production-ready container images require scanning, minimal base images, runtime security controls, and runtime observability.
+
+## Practice
+- Thực hành: scan images with Trivy, use non-root users, enable read-only filesystems, resource limits, and runtime monitoring.
 
 ## 1. Bảo Mật Docker
 
@@ -160,7 +170,6 @@ docker build \
 #     cat /run/secrets/mytoken | curl -H "Authorization: Bearer $(cat -)" ...
 ```
 
----
 
 ## 2. Private Registry
 
@@ -250,7 +259,6 @@ cp harbor.yml.tmpl harbor.yml
 ./install.sh
 ```
 
----
 
 ## 3. Production Best Practices
 
@@ -370,7 +378,6 @@ services:
         max_attempts: 3
 ```
 
----
 
 ## 4. Xử Lý Sự Cố Thường Gặp
 
@@ -480,7 +487,6 @@ USER appuser
 sudo chown -R 1001:1001 ./data/
 ```
 
----
 
 ## 5. CI/CD Integration
 
@@ -615,7 +621,6 @@ pipeline {
 }
 ```
 
----
 
 ## 6. Checklist Production
 
@@ -650,7 +655,6 @@ Data:
 [ ] Backup đã test restore
 ```
 
----
 
 ## 7. Lộ Trình Học Tiếp Theo
 
@@ -688,7 +692,6 @@ Docker Cơ Bản (Phần 1-5) ✅
 | Docker Best Practices | docs.docker.com/develop/dev-best-practices |
 | CIS Docker Benchmark | cisecurity.org (security hardening) |
 
----
 
 ## 8. Quick Reference Card
 
